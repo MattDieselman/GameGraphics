@@ -1,11 +1,11 @@
 #include "Entity.h"
-
 using namespace DirectX;
+
+// Constructors / Destructors
 
 Entity::Entity()
 {
 }
-
 
 Entity::Entity(Mesh * mesh_,Material * material_)
 {
@@ -21,6 +21,8 @@ Entity::Entity(Mesh * mesh_,Material * material_)
 Entity::~Entity()
 {
 }
+
+// Gets / Sets
 
 XMFLOAT4X4 Entity::getWorld()
 {
@@ -38,6 +40,16 @@ XMFLOAT4X4 Entity::getWorld()
 	return world;
 }
 
+XMFLOAT3 Entity::getRotation()
+{
+	return rotation;
+}
+
+XMFLOAT3 Entity::getScale()
+{
+	return scale;
+}
+
 XMFLOAT3 Entity::getPosition()
 {
 	return position;
@@ -48,10 +60,22 @@ void Entity::setPosition(XMFLOAT3 pos)
 	position = pos;
 }
 
+Mesh * Entity::getMesh()
+{
+	return mesh;
+}
+
+Material * Entity::getMat()
+{
+	return mat;
+}
+
 void Entity::setScale(XMFLOAT3 scale_)
 {
 	scale = scale_;
 }
+
+// Methods
 
 void Entity::Move(float speed, XMFLOAT3 rot)
 {

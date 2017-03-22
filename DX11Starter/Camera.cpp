@@ -1,20 +1,7 @@
 #include "Camera.h"
-
 using namespace DirectX;
-XMFLOAT4X4 Camera::getView()
-{
-	return viewMat;
-}
 
-XMFLOAT4X4 Camera::getProj()
-{
-	return projMat;
-}
-
-XMFLOAT3 Camera::getDir()
-{
-	return direction;
-}
+// Constructors / Destructors
 
 Camera::Camera(float width,float height)
 {
@@ -39,6 +26,29 @@ Camera::Camera(float width,float height)
 		100.0f);					// Far clip plane distance
 	XMStoreFloat4x4(&projMat, XMMatrixTranspose(P));
 }
+
+Camera::~Camera()
+{
+}
+
+// Gets / Sets
+
+XMFLOAT4X4 Camera::getView()
+{
+	return viewMat;
+}
+
+XMFLOAT4X4 Camera::getProj()
+{
+	return projMat;
+}
+
+XMFLOAT3 Camera::getDir()
+{
+	return direction;
+}
+
+// Methods
 
 void Camera::Update()
 {	
@@ -88,9 +98,4 @@ void Camera::MouseRotate(float x, float y)
 	if (y > -1 && y < 1)yRot = y;
 	else if (y < -1) yRot = -1;
 	else if (y > 1) yRot = 1;
-}
-
-
-Camera::~Camera()
-{
 }
