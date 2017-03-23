@@ -20,6 +20,8 @@ Entity::Entity(Mesh * mesh_,Material * material_)
 
 Entity::~Entity()
 {
+	mesh->release();
+	mat->release();
 }
 
 // Gets / Sets

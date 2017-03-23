@@ -1,22 +1,34 @@
 #pragma once
-#include "DXCore.h"
+
+#include <map>
 #include "SimpleShader.h"
-#include <DirectXMath.h>
+
+namespace
+{
+	std::map<void*, int> matRefCount;
+}
 
 class Material
 {
-private:
-	SimpleVertexShader * shader;
-	SimplePixelShader * pixel;
-	ID3D11ShaderResourceView * shaderView;
-	ID3D11SamplerState * sampState;
 public:
-	SimpleVertexShader * getShader();
-	SimplePixelShader * getPixel();
-	ID3D11ShaderResourceView * getShaderView();
-	ID3D11SamplerState * getSampState();
-	Material(SimpleVertexShader * shade_, SimplePixelShader* pix_, ID3D11ShaderResourceView * shaderView_, ID3D11SamplerState* sampState_);
-	Material();
+	Material(SimpleVertexShader* vs, SimplePixelShader* ps);
+
+	void AttatchTexture(ID3D11ShaderResourceView* tex, ID3D11SamplerState* sam);
+
+	SimpleVertexShader* getVertexShader();
+	SimplePixelShader* getPixelShader();
+	ID3D11ShaderResourceView* getTexture();
+	ID3D11SamplerState* getSampler();
+
+	Material* copy();
+	void release();
+
+private:
+	// Wrappers for DirectX shaders to provide simplified functionality
+	SimpleVertexShader* vertexShader;
+	SimplePixelShader* pixelShader;
+	ID3D11ShaderResourceView* texture;
+	ID3D11SamplerState* sampler;
 
 	~Material();
 };

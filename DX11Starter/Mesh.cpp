@@ -1,11 +1,23 @@
-#pragma once
 #include "Mesh.h"
 #include <fstream>
-using namespace DirectX;
+#include <vector>
 
-Mesh::Mesh(char * objFile, ID3D11Device * dev)
+using DirectX::XMFLOAT2;
+using DirectX::XMFLOAT3;
+using DirectX::XMFLOAT4;
+
+Mesh::Mesh(Vertex * vertices, int numVerts, unsigned int * indices, int numInds, ID3D11Device* device)
 {
-	XMFLOAT4 white = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	// Increment reference count
+	meshRefCount[this]++;
+
+	createBuffers(vertices, numVerts, indices, numInds, device);
+}
+
+Mesh::Mesh(char * objFile, ID3D11Device* device)
+{
+	// Increment reference count
+	meshRefCount[this]++;
 
 	// File input object
 	std::ifstream obj(objFile);
@@ -83,21 +95,19 @@ Mesh::Mesh(char * objFile, ID3D11Device * dev)
 			// - OBJ File indices are 1-based, so
 			//    they need to be adusted
 			Vertex v1;
-			v1.Position = positions[i[0] - 1];
-			v1.UV = uvs[i[1] - 1];
-			v1.Normal = normals[i[2] - 1];
-			//v1.Color = white;
+			v1.position = positions[i[0] - 1];
+			v1.uv = uvs[i[1] - 1];
+			v1.normal = normals[i[2] - 1];
+
 			Vertex v2;
-			v2.Position = positions[i[3] - 1];
-			v2.UV = uvs[i[4] - 1];
-			v2.Normal = normals[i[5] - 1];
-			//v2.Color = white;
+			v2.position = positions[i[3] - 1];
+			v2.uv = uvs[i[4] - 1];
+			v2.normal = normals[i[5] - 1];
 
 			Vertex v3;
-			v3.Position = positions[i[6] - 1];
-			v3.UV = uvs[i[7] - 1];
-			v3.Normal = normals[i[8] - 1];
-			//v3.Color = white;
+			v3.position = positions[i[6] - 1];
+			v3.uv = uvs[i[7] - 1];
+			v3.normal = normals[i[8] - 1];
 
 			// The model is most likely in a right-handed space,
 			// especially if it came from Maya.  We want to convert
@@ -111,19 +121,19 @@ Mesh::Mesh(char * objFile, ID3D11Device * dev)
 			// 3D modeling packages use the bottom left as (0,0)
 
 			// Flip the UV's since they're probably "upside down"
-			v1.UV.y = 1.0f - v1.UV.y;
-			v2.UV.y = 1.0f - v2.UV.y;
-			v3.UV.y = 1.0f - v3.UV.y;
+			v1.uv.y = 1.0f - v1.uv.y;
+			v2.uv.y = 1.0f - v2.uv.y;
+			v3.uv.y = 1.0f - v3.uv.y;
 
 			// Flip Z (LH vs. RH)
-			v1.Position.z *= -1.0f;
-			v2.Position.z *= -1.0f;
-			v3.Position.z *= -1.0f;
+			v1.position.z *= -1.0f;
+			v2.position.z *= -1.0f;
+			v3.position.z *= -1.0f;
 
 			// Flip normal Z
-			v1.Normal.z *= -1.0f;
-			v2.Normal.z *= -1.0f;
-			v3.Normal.z *= -1.0f;
+			v1.normal.z *= -1.0f;
+			v2.normal.z *= -1.0f;
+			v3.normal.z *= -1.0f;
 
 			// Add the verts to the vector (flipping the winding order)
 			verts.push_back(v1);
@@ -140,14 +150,14 @@ Mesh::Mesh(char * objFile, ID3D11Device * dev)
 			{
 				// Make the last vertex
 				Vertex v4;
-				v4.Position = positions[i[9] - 1];
-				v4.UV = uvs[i[10] - 1];
-				v4.Normal = normals[i[11] - 1];
+				v4.position = positions[i[9] - 1];
+				v4.uv = uvs[i[10] - 1];
+				v4.normal = normals[i[11] - 1];
 
 				// Flip the UV, Z pos and normal
-				v4.UV.y = 1.0f - v4.UV.y;
-				v4.Position.z *= -1.0f;
-				v4.Normal.z *= -1.0f;
+				v4.uv.y = 1.0f - v4.uv.y;
+				v4.position.z *= -1.0f;
+				v4.normal.z *= -1.0f;
 
 				// Add a whole triangle (flipping the winding order)
 				verts.push_back(v1);
@@ -174,26 +184,28 @@ Mesh::Mesh(char * objFile, ID3D11Device * dev)
 	//
 	// - "vertCounter" is BOTH the number of vertices and the number of indices
 	// - Yes, the indices are a bit redundant here (one per vertex)
-	BufferHelper(&verts[0], &indices[0], dev, vertCounter, vertCounter);
-}
-Mesh::Mesh()
-{
-}
-Mesh::Mesh(Vertex * verts, unsigned int * indexes, ID3D11Device * dev, int numVerts, int numIndicies_)
-{
-	XMFLOAT3 empty = XMFLOAT3(0.f, 0.0f, 0.0f);
-	XMFLOAT2 emptyUV = XMFLOAT2(0.f, 0.0f);
 
-	verts->Normal = empty;
-	verts->UV = emptyUV;
-	BufferHelper(verts, indexes, dev, numVerts, numIndicies_);
+	createBuffers(&verts[0], vertCounter, &indices[0], vertCounter, device);
 }
 
-void Mesh::BufferHelper(Vertex * verts, unsigned int * indexes, ID3D11Device * dev, int numVerts, int numIndicies_)
+Mesh::Mesh(const Mesh & mesh)
 {
-	XMFLOAT4 white = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	//verts->Color = white;
-	numIndicies = numIndicies_;
+	meshRefCount[this]++; // Increment reference count
+
+	vertexBuffer = mesh.vertexBuffer;
+	indexBuffer = mesh.indexBuffer;
+	indexCount = mesh.indexCount;
+}
+
+Mesh::~Mesh()
+{
+	
+	vertexBuffer->Release();
+	indexBuffer->Release();
+}
+
+void Mesh::createBuffers(Vertex * vertices, int numVerts, unsigned int * indices, int numInds, ID3D11Device * device)
+{
 	// Create the VERTEX BUFFER description -----------------------------------
 	// - The description is created on the stack because we only need
 	//    it to create the buffer.  The description is then useless.
@@ -208,54 +220,61 @@ void Mesh::BufferHelper(Vertex * verts, unsigned int * indexes, ID3D11Device * d
 	// Create the proper struct to hold the initial vertex data
 	// - This is how we put the initial data into the buffer
 	D3D11_SUBRESOURCE_DATA initialVertexData;
-	//verts->Color = white;
-	initialVertexData.pSysMem = verts;
+	initialVertexData.pSysMem = vertices;
 
 	// Actually create the buffer with the initial data
 	// - Once we do this, we'll NEVER CHANGE THE BUFFER AGAIN
-	dev->CreateBuffer(&vbd, &initialVertexData, &vertexBuffer);
-
-
+	device->CreateBuffer(&vbd, &initialVertexData, &vertexBuffer);
 
 	// Create the INDEX BUFFER description ------------------------------------
 	// - The description is created on the stack because we only need
 	//    it to create the buffer.  The description is then useless.
 	D3D11_BUFFER_DESC ibd;
 	ibd.Usage = D3D11_USAGE_IMMUTABLE;
-	ibd.ByteWidth = sizeof(int) * numIndicies;         // 3 = number of indices in the buffer
+	ibd.ByteWidth = sizeof(int) * numInds;         // 3 = number of indices in the buffer
 	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER; // Tells DirectX this is an index buffer
 	ibd.CPUAccessFlags = 0;
 	ibd.MiscFlags = 0;
 	ibd.StructureByteStride = 0;
 
-	// Create the proper struct to hold the initial index data
-	// - This is how we put the initial data into the buffer
+	indexCount = numInds; // Assign index count
+
+						  // Create the proper struct to hold the initial index data
+						  // - This is how we put the initial data into the buffer
 	D3D11_SUBRESOURCE_DATA initialIndexData;
-	initialIndexData.pSysMem = indexes;
+	initialIndexData.pSysMem = indices;
 
 	// Actually create the buffer with the initial data
 	// - Once we do this, we'll NEVER CHANGE THE BUFFER AGAIN
-	dev->CreateBuffer(&ibd, &initialIndexData, &indexBuffer);
+	device->CreateBuffer(&ibd, &initialIndexData, &indexBuffer);
 }
 
-ID3D11Buffer * Mesh::GetVertexBuffer()
+Mesh * Mesh::copy()
+{
+	meshRefCount[this]++;
+	return this;
+}
+
+void Mesh::release()
+{
+	meshRefCount[this]--;
+	if (meshRefCount[this] == 0)
+	{
+		delete this;
+	}
+}
+
+ID3D11Buffer * Mesh::getVertexBuffer()
 {
 	return vertexBuffer;
 }
 
-ID3D11Buffer * Mesh::GetIndexBuffer()
- {
+ID3D11Buffer * Mesh::getIndexBuffer()
+{
 	return indexBuffer;
 }
 
-int Mesh::getNumIndicies()
+int Mesh::getIndexCount()
 {
-	return numIndicies;
-}
-
-
-Mesh::~Mesh()
-{
-	if (vertexBuffer) { vertexBuffer->Release(); }
-	if (indexBuffer) { indexBuffer->Release(); }
+	return indexCount;
 }

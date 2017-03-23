@@ -50,22 +50,10 @@ Game::~Game()
 	// will clean up their own internal DirectX stuff
 	delete vertexShader;
 	delete pixelShader;
-	if(mesh1)delete mesh1;
-	if(mesh2)delete mesh2;
-	if(mesh3)delete mesh3;
-	if (mesh4)delete mesh4;
-	if (mesh5)delete mesh5;
-	if (mesh6)delete mesh6;
-	if (mesh7)delete mesh7;
-	if (mesh8)delete mesh8;
-	if (mesh9)delete mesh9;
 	if (entity1)delete entity1;
 	if (entity2)delete entity2;
 	if (entity3)delete entity3;
 	if (cam) delete cam;
-	if (Mat1) delete Mat1;
-	if (Mat2) delete Mat2;
-	if (Mat3) delete Mat3;
 
 	shaderView->Release();//) delete shaderView;
 	sampState->Release();//) delete sampState;
@@ -144,10 +132,15 @@ void Game::LoadShaders()
 	device->CreateSamplerState(&sampDesc, &sampState);
 
 
-	Mat1 = new Material(vertexShader, pixelShader, shaderView, sampState);
+	Mat1 = new Material(vertexShader, pixelShader);
+	Mat1->AttatchTexture(shaderView, sampState);
 
-	Mat2 = new Material(vertexShader, pixelShader, shaderView2, sampState);
-	Mat3 = new Material(vertexShader, pixelShader, shaderView3, sampState);
+	Mat2 = new Material(vertexShader, pixelShader);
+	Mat2->AttatchTexture(shaderView, sampState);
+
+	Mat3 = new Material(vertexShader, pixelShader);
+	Mat3->AttatchTexture(shaderView, sampState);
+
 	// You'll notice that the code above attempts to load each
 	// compiled shader file (.cso) from two different relative paths.
 
@@ -222,7 +215,7 @@ void Game::CreateBasicGeometry()
 	//    in the correct order and each one will be used exactly once
 	// - But just to see how it's done...
 	unsigned int indices[] = { 0, 1, 2 };
-	mesh1 =new Mesh(vertices,indices,device,3,3);
+	mesh1 = new Mesh(vertices, 3, indices, 3, device);
 
 
 	Vertex vertices2[] =
@@ -233,7 +226,7 @@ void Game::CreateBasicGeometry()
 		{ XMFLOAT3(+1.0f, +1.0f, +0.0f) },
 	};
 	unsigned int indices2[] = { 0, 1, 2 ,0,2,3};
-	mesh2 = new Mesh(vertices2, indices2, device, 4, 6);
+	mesh2 = new Mesh(vertices2, 4, indices2, 6, device);
 
 	Vertex vertices3[] =
 	{
@@ -260,7 +253,7 @@ void Game::CreateBasicGeometry()
 		2,7,6,
 		3,7,2
 	};
-	mesh3 = new Mesh(vertices3, indices3, device, 8, 36);
+	mesh3 = new Mesh(vertices3, 8, indices3, 36, device);
 	mesh4 = new Mesh("OBJ Files/cone.obj",device);
 	mesh5 = new Mesh("OBJ Files/cube.obj", device);
 	mesh6 = new Mesh("OBJ Files/cylinder.obj", device);
@@ -404,11 +397,11 @@ void Game::Draw(float deltaTime, float totalTime)
 	//    and then copying that entire buffer to the GPU.  
 	//  - The "SimpleShader" class handles all of that for you.
 
-	entity1->getMat()->getShader()->SetMatrix4x4("world", entity1->getWorld());//entity1->world);
-	entity1->getMat()->getShader()->SetMatrix4x4("view", cam->getView());
-	entity1->getMat()->getShader()->SetMatrix4x4("projection", cam->getProj());
-	entity1->getMat()->getShader()->CopyAllBufferData();
-	entity1->getMat()->getShader()->SetShader();
+	entity1->getMat()->getVertexShader()->SetMatrix4x4("world", entity1->getWorld());//entity1->world);
+	entity1->getMat()->getVertexShader()->SetMatrix4x4("view", cam->getView());
+	entity1->getMat()->getVertexShader()->SetMatrix4x4("projection", cam->getProj());
+	entity1->getMat()->getVertexShader()->CopyAllBufferData();
+	entity1->getMat()->getVertexShader()->SetShader();
 
 	// Once you've set all of the data you care to change for
 	// the next draw call, you need to actually send it to the GPU
@@ -418,10 +411,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	//  - These don't technically need to be set every frame...YET
 	//  - Once you start applying different shaders to different objects,
 	//    you'll need to swap the current shaders before each draw
-	entity1->getMat()->getPixel()->SetShaderResourceView("diffuseTexture", entity1->getMat()->getShaderView());
-	entity1->getMat()->getPixel()->SetSamplerState("sampState", entity1->getMat()->getSampState());
-	entity1->getMat()->getPixel()->CopyAllBufferData();
-	entity1->getMat()->getPixel()->SetShader();
+	entity1->getMat()->getPixelShader()->SetShaderResourceView("diffuseTexture", entity1->getMat()->getTexture());
+	entity1->getMat()->getPixelShader()->SetSamplerState("sampState", entity1->getMat()->getSampler());
+	entity1->getMat()->getPixelShader()->CopyAllBufferData();
+	entity1->getMat()->getPixelShader()->SetShader();
 
 
 	// Set buffers in the input assembler
@@ -429,39 +422,39 @@ void Game::Draw(float deltaTime, float totalTime)
 	//    have different geometry.
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
-	ID3D11Buffer *verts = entity1->getMesh()->GetVertexBuffer();
+	ID3D11Buffer *verts = entity1->getMesh()->getVertexBuffer();
 	context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
-	context->IASetIndexBuffer(entity1->getMesh()->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	context->IASetIndexBuffer(entity1->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
 	context->DrawIndexed(
-		entity1->getMesh()->getNumIndicies(),     // The number of indices to use (we could draw a subset if we wanted)
+		entity1->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
 		0,     // Offset to the first index we want to use
 		0);    // Offset to add to each index when looking up vertices
 
-	entity2->getMat()->getShader()->SetMatrix4x4("world", entity2->getWorld());
-	entity2->getMat()->getPixel()->SetSamplerState("sampState", entity2->getMat()->getSampState());
-	entity2->getMat()->getPixel()->SetShaderResourceView("diffuseTexture", entity2->getMat()->getShaderView());
-	entity2->getMat()->getPixel()->CopyAllBufferData();
+	entity2->getMat()->getVertexShader()->SetMatrix4x4("world", entity2->getWorld());
+	entity2->getMat()->getPixelShader()->SetSamplerState("sampState", entity2->getMat()->getSampler());
+	entity2->getMat()->getPixelShader()->SetShaderResourceView("diffuseTexture", entity2->getMat()->getTexture());
+	entity2->getMat()->getPixelShader()->CopyAllBufferData();
 
-	entity2->getMat()->getShader()->CopyAllBufferData();
-	ID3D11Buffer *verts2 = entity2->getMesh()->GetVertexBuffer();
+	entity2->getMat()->getVertexShader()->CopyAllBufferData();
+	ID3D11Buffer *verts2 = entity2->getMesh()->getVertexBuffer();
 	context->IASetVertexBuffers(0, 1, &verts2, &stride, &offset);
-	context->IASetIndexBuffer(entity2->getMesh()->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	context->IASetIndexBuffer(entity2->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 	context->DrawIndexed(
-		entity2->getMesh()->getNumIndicies(),     // The number of indices to use (we could draw a subset if we wanted)
+		entity2->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
 		0,     // Offset to the first index we want to use
 		0);    // Offset to add to each index when looking up vertices
 
-	entity3->getMat()->getShader()->SetMatrix4x4("world", entity3->getWorld());
-	entity3->getMat()->getPixel()->SetSamplerState("sampState", entity3->getMat()->getSampState());
-	entity3->getMat()->getPixel()->SetShaderResourceView("diffuseTexture", entity3->getMat()->getShaderView());
-	entity3->getMat()->getPixel()->CopyAllBufferData();
+	entity3->getMat()->getVertexShader()->SetMatrix4x4("world", entity3->getWorld());
+	entity3->getMat()->getPixelShader()->SetSamplerState("sampState", entity3->getMat()->getSampler());
+	entity3->getMat()->getPixelShader()->SetShaderResourceView("diffuseTexture", entity3->getMat()->getTexture());
+	entity3->getMat()->getPixelShader()->CopyAllBufferData();
 
-	entity3->getMat()->getShader()->CopyAllBufferData();
+	entity3->getMat()->getVertexShader()->CopyAllBufferData();
 
-	ID3D11Buffer *verts3 = entity3->getMesh()->GetVertexBuffer();
+	ID3D11Buffer *verts3 = entity3->getMesh()->getVertexBuffer();
 	context->IASetVertexBuffers(0, 1, &verts3, &stride, &offset);
-	context->IASetIndexBuffer(entity3->getMesh()->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	context->IASetIndexBuffer(entity3->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
 
 	// Finally do the actual drawing
@@ -471,7 +464,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//     vertices in the currently set VERTEX BUFFER
 	context->DrawIndexed(
 		//36,
-		entity3->getMesh()->getNumIndicies(),// The number of indices to use (we could draw a subset if we wanted)
+		entity3->getMesh()->getIndexCount(),// The number of indices to use (we could draw a subset if we wanted)
 		0,     // Offset to the first index we want to use
 		0);    // Offset to add to each index when looking up vertices
 
