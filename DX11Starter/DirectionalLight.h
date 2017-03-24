@@ -1,5 +1,5 @@
 #pragma once
-#include "DXCore.h"
+
 #include <DirectXMath.h>
 
 using namespace DirectX;

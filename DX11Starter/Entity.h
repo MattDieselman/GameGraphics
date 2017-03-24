@@ -1,12 +1,10 @@
 #pragma once
-#include "DXCore.h"
-#include <d3d11.h>
-#include "Vertex.h"
-#include "SimpleShader.h"
-#include <DirectXMath.h>
+
 #include "Mesh.h"
 #include "Material.h"
+
 using namespace DirectX;
+
 class Entity
 {
 private:

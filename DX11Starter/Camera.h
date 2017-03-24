@@ -1,6 +1,5 @@
 #pragma once
-#include "DXCore.h"
-#include "SimpleShader.h"
+
 #include <DirectXMath.h>
 
 class Camera

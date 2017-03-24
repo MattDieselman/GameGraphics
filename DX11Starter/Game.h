@@ -1,9 +1,6 @@
 #pragma once
 
 #include "DXCore.h"
-#include "SimpleShader.h"
-#include <DirectXMath.h>
-#include "Mesh.h"
 #include "Entity.h"
 #include "Camera.h"
 #include "DirectionalLight.h"

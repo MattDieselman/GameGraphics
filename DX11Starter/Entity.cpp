@@ -1,4 +1,5 @@
 #include "Entity.h"
+
 using namespace DirectX;
 
 // Constructors / Destructors
