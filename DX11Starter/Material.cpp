@@ -1,26 +1,39 @@
 #include "Material.h"
 
-Material::Material(SimpleVertexShader * vs, SimplePixelShader * ps) :
-	vertexShader(vs), pixelShader(ps)
+Material::Material(SimpleVertexShader * vs, SimplePixelShader * ps)
 {
 	// Increment reference count
 	matRefCount[this]++;
+	shaderRefCount[vs]++;
+	shaderRefCount[ps]++;
+
+	// Cast the shader pointers to the same address as the parameters
+	vertexShader = vs;
+	pixelShader = ps;
 }
 
 void Material::AttatchTexture(ID3D11ShaderResourceView * tex, ID3D11SamplerState * sam)
 {
+	textureRefCount[tex]++;
+	samplerRefCount[sam]++;
+
 	texture = tex;
 	sampler = sam;
 }
 
 Material::~Material()
 {
+	--shaderRefCount[vertexShader];
+	--shaderRefCount[pixelShader];
+	--textureRefCount[texture];
+	--samplerRefCount[sampler];
+
 	// Delete our simple shader objects, which
 	// will clean up their own internal DirectX stuff
-	if (vertexShader != nullptr) { delete vertexShader; }
-	if (pixelShader != nullptr) { delete pixelShader; }
-	if (pixelShader != nullptr) { texture->Release(); }
-	if (sampler != nullptr) { sampler->Release(); };
+	if (shaderRefCount[vertexShader] == 0) { delete vertexShader; }
+	if (shaderRefCount[pixelShader] == 0) { delete pixelShader;	}
+	if (textureRefCount[texture] == 0) { texture->Release(); }
+	if (samplerRefCount[sampler] == 0) { sampler->Release(); };
 }
 
 SimpleVertexShader * Material::getVertexShader()

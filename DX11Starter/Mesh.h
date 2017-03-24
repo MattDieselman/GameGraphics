@@ -2,6 +2,7 @@
 
 #include <map>
 #include <d3d11.h>
+
 #include "Vertex.h"
 
 namespace

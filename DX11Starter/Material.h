@@ -1,11 +1,15 @@
 #pragma once
 
 #include <map>
+
 #include "SimpleShader.h"
 
 namespace
 {
 	std::map<void*, int> matRefCount;
+	std::map<void*, int> shaderRefCount;
+	std::map<void*, int> textureRefCount;
+	std::map<void*, int> samplerRefCount;
 }
 
 class Material

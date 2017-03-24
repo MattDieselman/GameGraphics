@@ -2,9 +2,8 @@
 
 #include <DirectXMath.h>
 
-using namespace DirectX;
 struct DirectionalLight {
-	XMFLOAT4 AmbientColor;
-	XMFLOAT4 DiffuseColor;
-	XMFLOAT3 Direction;
+	DirectX::XMFLOAT4 ambientColor;
+	DirectX::XMFLOAT4 diffuseColor;
+	DirectX::XMFLOAT3 direction;
 };
