@@ -6,7 +6,7 @@
 #include "Entity.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
-
+#include "Obstacle.h"
 class Game 
 	: public DXCore
 {
@@ -42,7 +42,7 @@ private:
 	Camera * cam;
 
 	std::vector<Entity*> gameObjects;
-
+	std::vector<Obstacle*> objects;
 	std::vector<Material*> materials;
 
 	// Initialization helper methods - feel free to customize, combine, etc.

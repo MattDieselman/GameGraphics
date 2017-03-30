@@ -48,6 +48,10 @@ Game::~Game()
 	}
 	if (cam) delete cam;
 
+	for (Obstacle * i : objects) {
+		delete i;
+	}
+
 	length = meshes.size();
 	for (int i = 0; i < length; i++)
 	{
@@ -59,6 +63,7 @@ Game::~Game()
 	{
 		materials[i]->release();
 	}
+	
 }
 
 // --------------------------------------------------------
@@ -277,6 +282,13 @@ void Game::CreateBasicGeometry()
 	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[2]->copy()));
 	gameObjects[2]->setPosition(XMFLOAT3(-5, -2, 0));
 	gameObjects[2]->setScale(XMFLOAT3(1, 2, 1));
+
+	objects.push_back(new Obstacle(meshes[8]->copy(),materials[2]->copy()));
+	objects[0]->setPosition(XMFLOAT3(5, 2, 0));
+	objects[0]->setScale(XMFLOAT3(1, 2, 1));
+	objects.push_back(new Obstacle(meshes[8]->copy(), materials[2]->copy()));
+	objects[1]->setPosition(XMFLOAT3(-5, -2, 0));
+	objects[1]->setScale(XMFLOAT3(1, 2, 1));
 }
 
 
@@ -298,7 +310,21 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {	
 	cam->Update();
-	gameObjects[1]->Move(-.005, XMFLOAT3(1,0,0));
+
+	for (Obstacle * o : objects) {
+		o->Move(-.005, XMFLOAT3(1, 0, 0));
+	}
+
+	if (objects[0]->getPosition().x < -10)
+	{
+		objects[0]->setPosition(XMFLOAT3(10, 2, 0));
+	}
+	if (objects[1]->getPosition().x < -10)
+	{
+		objects[1]->setPosition(XMFLOAT3(10, -2, 0));
+	}
+
+	/*gameObjects[1]->Move(-.005, XMFLOAT3(1,0,0));
 	if (gameObjects[1]->getPosition().x < -10)
 	{
 		gameObjects[1]->setPosition(XMFLOAT3(10, 2, 0));
@@ -307,9 +333,8 @@ void Game::Update(float deltaTime, float totalTime)
 	gameObjects[2]->Move(-.005, XMFLOAT3(1, 0, 0));
 	if (gameObjects[2]->getPosition().x < -10)
 	{
-		gameObjects[2]->setPosition(XMFLOAT3(10, -1, 0));
-	}
-	//vertexShader->CopyAllBufferData();
+		gameObjects[2]->setPosition(XMFLOAT3(10, -2, 0));
+	}*/
 
 	if (GetAsyncKeyState(' ') & 0x8000) {
 		gameObjects[0]->Move(0.015, XMFLOAT3(0, 1, 0));
@@ -317,6 +342,11 @@ void Game::Update(float deltaTime, float totalTime)
 	else
 	{
 		gameObjects[0]->Move(0.01, XMFLOAT3(0, -1, 0));
+	}
+
+	if (gameObjects[0]->checkCollision(*objects[0]) || gameObjects[0]->checkCollision(*objects[1]))
+	{
+		gameObjects[0]->setPosition(XMFLOAT3(0, 0, 0));
 	}
 
 	if (gameObjects[0]->getPosition().y > 3)
@@ -380,6 +410,30 @@ void Game::Draw(float deltaTime, float totalTime)
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f,
 		0);
+
+	for (Obstacle * object : objects) {
+		object->getMat()->getVertexShader()->SetMatrix4x4("world", object->getWorld());//entity1->world);
+		object->getMat()->getVertexShader()->SetMatrix4x4("view", cam->getView());
+		object->getMat()->getVertexShader()->SetMatrix4x4("projection", cam->getProj());
+		object->getMat()->getVertexShader()->CopyAllBufferData();
+		object->getMat()->getVertexShader()->SetShader();
+
+		object->getMat()->getPixelShader()->SetShaderResourceView("diffuseTexture", object->getMat()->getTexture());
+		object->getMat()->getPixelShader()->SetSamplerState("sampState", object->getMat()->getSampler());
+		object->getMat()->getPixelShader()->CopyAllBufferData();
+		object->getMat()->getPixelShader()->SetShader();
+
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		ID3D11Buffer *verts = object->getMesh()->getVertexBuffer();
+		context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
+		context->IASetIndexBuffer(object->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+
+		context->DrawIndexed(
+			object->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+			0,     // Offset to the first index we want to use
+			0);    // Offset to add to each index when looking up vertices
+	}
 
 	for each (Entity* object in gameObjects)
 	{

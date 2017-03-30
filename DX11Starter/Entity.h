@@ -24,14 +24,13 @@ public:
 
 	XMFLOAT4X4 getWorld();
 	XMFLOAT3 getRotation();
-	XMFLOAT3 getScale();
+	XMFLOAT3 getScale() const;
 	void setScale(XMFLOAT3 scale_);
-	XMFLOAT3 getPosition();
+	XMFLOAT3 getPosition() const;
 	void setPosition(XMFLOAT3 pos);
 	Mesh* getMesh();
 	Material * getMat();
-	
 	void Move(float speed, XMFLOAT3 rot);
-	
+	bool checkCollision(const Entity& other);
 };
 

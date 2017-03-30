@@ -48,12 +48,12 @@ XMFLOAT3 Entity::getRotation()
 	return rotation;
 }
 
-XMFLOAT3 Entity::getScale()
+XMFLOAT3 Entity::getScale() const
 {
 	return scale;
 }
 
-XMFLOAT3 Entity::getPosition()
+XMFLOAT3 Entity::getPosition() const
 {
 	return position;
 }
@@ -101,5 +101,28 @@ void Entity::Move(float speed, XMFLOAT3 rot)
 
 	XMStoreFloat3(&position, pos);
 	XMStoreFloat4x4(&world, (w));
+}
+
+bool Entity::checkCollision(const Entity& other)
+{
+	XMFLOAT3 otherPos = other.getPosition();
+
+	float resultantX = otherPos.x - position.x;
+
+	float extentX = fabs(resultantX) - (scale.x + other.getScale().x) / 2;
+
+	if (extentX <= 0)
+	{
+		float resultantY = otherPos.y - position.y;
+
+		float extentY = fabs(resultantY) - (scale.y + other.getScale().y) / 2;
+
+		if (extentY <= 0)
+		{
+ 			return true;
+		}
+	}
+
+	return false;
 }
 
