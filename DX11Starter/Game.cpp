@@ -307,9 +307,8 @@ void Game::Update(float deltaTime, float totalTime)
 	gameObjects[2]->Move(-.005, XMFLOAT3(1, 0, 0));
 	if (gameObjects[2]->getPosition().x < -10)
 	{
-		gameObjects[2]->setPosition(XMFLOAT3(10, -1, 0));
+		gameObjects[2]->setPosition(XMFLOAT3(10, -2, 0));
 	}
-	//vertexShader->CopyAllBufferData();
 
 	if (GetAsyncKeyState(' ') & 0x8000) {
 		gameObjects[0]->Move(0.015, XMFLOAT3(0, 1, 0));
@@ -317,6 +316,11 @@ void Game::Update(float deltaTime, float totalTime)
 	else
 	{
 		gameObjects[0]->Move(0.01, XMFLOAT3(0, -1, 0));
+	}
+
+	if (gameObjects[0]->checkCollision(*gameObjects[1]) || gameObjects[0]->checkCollision(*gameObjects[2]))
+	{
+		gameObjects[0]->setPosition(XMFLOAT3(0, 0, 0));
 	}
 
 	if (gameObjects[0]->getPosition().y > 3)
