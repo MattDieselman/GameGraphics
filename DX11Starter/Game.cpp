@@ -270,12 +270,13 @@ void Game::CreateBasicGeometry()
 	meshes.push_back(new Mesh("OBJ Files/sphere.obj", device));
 	meshes.push_back(new Mesh("OBJ Files/torus.obj", device));
 
-	gameObjects.push_back(new Entity(meshes[6]->copy(), materials[1]->copy()));
-	gameObjects.push_back(new Entity(meshes[7]->copy(), materials[0]->copy()));
-	gameObjects.push_back(new Entity(meshes[8]->copy(), materials[2]->copy()));
-	//entity3->rotation = XMFLOAT3(XM_PIDIV2,4, XM_PIDIV2);
-	gameObjects[1]->setPosition(XMFLOAT3(.5f, .5, .5));
-	//entity1->setScale(XMFLOAT3(2, .1, .1));
+	gameObjects.push_back(new Entity(meshes[5]->copy(), materials[1]->copy()));
+	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[0]->copy()));
+	gameObjects[1]->setPosition(XMFLOAT3(5, 2, 0));
+	gameObjects[1]->setScale(XMFLOAT3(1, 2, 1));
+	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[2]->copy()));
+	gameObjects[2]->setPosition(XMFLOAT3(-5, -2, 0));
+	gameObjects[2]->setScale(XMFLOAT3(1, 2, 1));
 }
 
 
@@ -297,14 +298,36 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {	
 	cam->Update();
-	gameObjects[1]->Move(2*cos(totalTime / (3.14*.5))*deltaTime, XMFLOAT3(0,1,0));
+	gameObjects[1]->Move(-.005, XMFLOAT3(1,0,0));
+	if (gameObjects[1]->getPosition().x < -10)
+	{
+		gameObjects[1]->setPosition(XMFLOAT3(10, 2, 0));
+	}
 
-	gameObjects[2]->Move( cos(totalTime/3.14) *(deltaTime), XMFLOAT3(1, 0, 0));
+	gameObjects[2]->Move(-.005, XMFLOAT3(1, 0, 0));
+	if (gameObjects[2]->getPosition().x < -10)
+	{
+		gameObjects[2]->setPosition(XMFLOAT3(10, -1, 0));
+	}
 	//vertexShader->CopyAllBufferData();
 
 	if (GetAsyncKeyState(' ') & 0x8000) {
-		cam->MoveYAxis(.5*deltaTime);
+		gameObjects[0]->Move(0.015, XMFLOAT3(0, 1, 0));
 	}
+	else
+	{
+		gameObjects[0]->Move(0.01, XMFLOAT3(0, -1, 0));
+	}
+
+	if (gameObjects[0]->getPosition().y > 3)
+	{
+		gameObjects[0]->setPosition(XMFLOAT3(gameObjects[0]->getPosition().x, 3, 0));
+	}
+	if (gameObjects[0]->getPosition().y < -3)
+	{
+		gameObjects[0]->setPosition(XMFLOAT3(gameObjects[0]->getPosition().x, -3, 0));
+	}
+
 	if (GetAsyncKeyState('X') & 0x8000) {
 		cam->MoveYAxis(-.5*deltaTime);
 	}
@@ -451,7 +474,7 @@ void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 {
 	// Add any custom code here...
 	if (buttonState & 0x001) {
-		cam->MouseRotate((y - prevMousePos.y)*.000125, (x - prevMousePos.x)*.000125);
+		cam->MouseRotate((y - prevMousePos.y)*.00125, (x - prevMousePos.x)*.00125);
 	}
 	// Save the previous mouse position, so we have it for the future
 	prevMousePos.x = x;

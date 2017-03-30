@@ -6,9 +6,9 @@ using namespace DirectX;
 
 Camera::Camera(float width,float height)
 {
-	position = XMFLOAT3(1, 1, -10);
+	position = XMFLOAT3(0, 0, -10);
 	direction = XMFLOAT3(0, 0, 1);
-	XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
+	XMVECTOR pos = XMVectorSet(0, 0, -10, 0);
 	XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
 	upVec = XMFLOAT4(0, 1, 0, 0);
 	xRot = 0;
