@@ -3,10 +3,11 @@
 #include <vector>
 
 #include "DXCore.h"
-#include "Entity.h"
+#include "PhysicsManager.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
 #include "Obstacle.h"
+
 class Game 
 	: public DXCore
 {
@@ -42,7 +43,7 @@ private:
 	Camera * cam;
 
 	std::vector<Entity*> gameObjects;
-	std::vector<Obstacle*> objects;
+	// std::vector<Obstacle*> objects;
 	std::vector<Material*> materials;
 
 	// Initialization helper methods - feel free to customize, combine, etc.
@@ -57,5 +58,8 @@ private:
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.
 	POINT prevMousePos;
+
+	// Managers
+	PhysicsManager physicsManager;
 };
 

@@ -2,35 +2,41 @@
 
 #include "Mesh.h"
 #include "Material.h"
-
-using namespace DirectX;
+#include "Transform.h"
+#include "Collider.h"
 
 class Entity
 {
 private:
 
-	XMFLOAT4X4 world;
-	XMFLOAT3 rotation;
-	XMFLOAT3 scale;
-	XMFLOAT3 position;
+	DirectX::XMFLOAT4X4 world;
+	Transform transform;
 	Mesh* mesh;
 	Material * mat;
+	Collider collider;
 
 public:
 
 	Entity();
-	Entity(Mesh* mesh_,Material * material_);
+	Entity(Mesh* mesh,Material * material, ColliderType colliderType);
 	~Entity();
 
-	XMFLOAT4X4 getWorld();
-	XMFLOAT3 getRotation();
-	XMFLOAT3 getScale() const;
-	void setScale(XMFLOAT3 scale_);
-	XMFLOAT3 getPosition() const;
-	void setPosition(XMFLOAT3 pos);
+	DirectX::XMFLOAT4X4 getWorld();
+	DirectX::XMFLOAT3 getPosition() const;
+	DirectX::XMFLOAT3 getRotation();
+	DirectX::XMFLOAT3 getScale() const;
+
+	void setScale(DirectX::XMFLOAT3 scale);
+	void setPosition(DirectX::XMFLOAT3 pos);
+
 	Mesh* getMesh();
 	Material * getMat();
-	void Move(float speed, XMFLOAT3 rot);
+
+	Collider getCollider() const;
+	void setCollider(DirectX::XMFLOAT3 min, DirectX::XMFLOAT3 max);
+	void calculateCollider();
+
+	void Move(float speed, DirectX::XMFLOAT3 rot);
 	bool checkCollision(const Entity& other);
 };
 

@@ -6,17 +6,25 @@ using namespace DirectX;
 
 Entity::Entity()
 {
+	collider.colliderType = ColliderType::NONE;
 }
 
-Entity::Entity(Mesh * mesh_,Material * material_)
+Entity::Entity(Mesh * mesh, Material * material, ColliderType colliderType)
 {
-	mesh = mesh_;
+	this->mesh = mesh;
+
+	mat = material;
+
+	collider.colliderType = colliderType;
+
 	XMMATRIX W = XMMatrixIdentity();
 	XMStoreFloat4x4(&world, XMMatrixTranspose(W));
-	position = XMFLOAT3(0, 0, 0);
-	rotation = XMFLOAT3(0, 0, 0);
-	scale = XMFLOAT3(1, 1, 1);
-	mat = material_;
+
+	transform.position = XMFLOAT3(0, 0, 0);
+	transform.rotation = XMFLOAT3(0, 0, 0);
+	transform.scale = XMFLOAT3(1, 1, 1);
+
+	calculateCollider();
 }
 
 Entity::~Entity()
@@ -29,38 +37,47 @@ Entity::~Entity()
 
 XMFLOAT4X4 Entity::getWorld()
 {
-	XMVECTOR pos = XMLoadFloat3(&(position));//XMVectorAdd(XMLoadFloat3(&position),XMLoadFloat(&speed));//XMVectorAdd(XMLoadFloat3(&position) , XMVectorMultiply(XMLoadFloat3(&rot),XMLoadFloat( &speed)));
-	XMMATRIX w = XMLoadFloat4x4(&world);
-	XMMATRIX trans = XMMatrixTranspose(XMMatrixTranslationFromVector(pos));
-	XMMATRIX rotMat = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotation));
-	XMMATRIX scal = XMMatrixScalingFromVector(XMLoadFloat3(&scale));
+	//XMVECTOR pos = XMLoadFloat3(&(transform.position));//XMVectorAdd(XMLoadFloat3(&position),XMLoadFloat(&speed));//XMVectorAdd(XMLoadFloat3(&position) , XMVectorMultiply(XMLoadFloat3(&rot),XMLoadFloat( &speed)));
+	//XMMATRIX w = XMLoadFloat4x4(&world);
+	XMMATRIX trans = XMMatrixTranspose(XMMatrixTranslationFromVector(XMLoadFloat3(&transform.position)));
+	XMMATRIX rotMat = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&transform.rotation));
+	XMMATRIX scale = XMMatrixScalingFromVector(XMLoadFloat3(&transform.scale));
 
-	w = trans*
+	XMMATRIX w = trans*
 		rotMat *
-		scal;
-	XMStoreFloat3(&position, pos);
+		scale;
+
+	//XMStoreFloat3(&transform.position, pos);
 	XMStoreFloat4x4(&world, (w));
+
 	return world;
-}
-
-XMFLOAT3 Entity::getRotation()
-{
-	return rotation;
-}
-
-XMFLOAT3 Entity::getScale() const
-{
-	return scale;
 }
 
 XMFLOAT3 Entity::getPosition() const
 {
-	return position;
+	return transform.position;
+}
+
+XMFLOAT3 Entity::getRotation()
+{
+	return transform.rotation;
+}
+
+XMFLOAT3 Entity::getScale() const
+{
+	return transform.scale;
 }
 
 void Entity::setPosition(XMFLOAT3 pos)
 {
-	position = pos;
+	transform.position = pos;
+}
+
+void Entity::setScale(XMFLOAT3 scale)
+{
+	transform.scale = scale;
+
+	calculateCollider();
 }
 
 Mesh * Entity::getMesh()
@@ -73,51 +90,85 @@ Material * Entity::getMat()
 	return mat;
 }
 
-void Entity::setScale(XMFLOAT3 scale_)
+Collider Entity::getCollider() const
 {
-	scale = scale_;
+	return collider;
+}
+
+void Entity::setCollider(XMFLOAT3 min, XMFLOAT3 max)
+{
+	XMVECTOR vecToMin = XMVector3Transform(XMLoadFloat3(&min), XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z));
+	XMVECTOR vecToMax = XMVector3Transform(XMLoadFloat3(&max), XMMatrixScaling(transform.scale.x, transform.scale.y, transform.scale.z));
+
+	XMStoreFloat3(&collider.min, vecToMin);
+	XMStoreFloat3(&collider.max, vecToMax);
+}
+
+void Entity::calculateCollider()
+{
+	if (collider.colliderType != ColliderType::NONE)
+	{
+		std::vector<Vertex> vertices = mesh->getVertices();
+		DirectX::XMFLOAT3 min = DirectX::XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
+		DirectX::XMFLOAT3 max = DirectX::XMFLOAT3(FLT_MIN, FLT_MIN, FLT_MIN);
+		for (int i = 0; i < mesh->getVertexCount(); i++)
+		{
+			// Find mesh min xyz
+			min.x = fmin(min.x, vertices[i].position.x);
+			min.y = fmin(min.y, vertices[i].position.y);
+			min.z = fmin(min.z, vertices[i].position.z);
+
+			// Find mesh max xyz
+			max.x = fmax(max.x, vertices[i].position.x);
+			max.y = fmax(max.y, vertices[i].position.y);
+			max.z = fmax(max.z, vertices[i].position.z);
+		}
+
+		setCollider(min, max);
+	}
 }
 
 // Methods
 
 void Entity::Move(float speed, XMFLOAT3 rot)
 {
-
-
-	XMVECTOR pos = XMLoadFloat3(&(position));
+	XMVECTOR pos = XMLoadFloat3(&transform.position);
 
 	pos = pos + (XMLoadFloat3(&rot) * speed);
-	XMMATRIX w = XMLoadFloat4x4(&world);
 
-	XMMATRIX trans = XMMatrixTranspose( XMMatrixTranslationFromVector(pos));
+	//XMMATRIX w = XMLoadFloat4x4(&world);
 
-	XMMATRIX rotMat = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotation));
-	XMMATRIX scal = XMMatrixScalingFromVector(XMLoadFloat3(&scale));
+	/*XMMATRIX trans = XMMatrixTranspose( XMMatrixTranslationFromVector(pos));
 
-	w = trans*
+	XMMATRIX rotMat = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&transform.rotation));
+	XMMATRIX scal = XMMatrixScalingFromVector(XMLoadFloat3(&transform.scale));
+
+	XMMATRIX w = trans*
 		rotMat *
-		scal;
+		scal;*/
 
+	XMStoreFloat3(&transform.position, pos);
 
-	XMStoreFloat3(&position, pos);
-	XMStoreFloat4x4(&world, (w));
+	//XMStoreFloat4x4(&world, (w));
 }
 
 bool Entity::checkCollision(const Entity& other)
 {
 	XMFLOAT3 otherPos = other.getPosition();
 
-	float resultantX = otherPos.x - position.x;
+	float resultantX = otherPos.x - transform.position.x;
 
-	float extentX = fabs(resultantX) - (scale.x + other.getScale().x) / 2;
+	float aExtentX = collider.max.x;
+	float bExtentX = other.getCollider().max.x;
 
-	if (extentX <= 0)
+	if (fabs(resultantX) <= aExtentX + bExtentX)
 	{
-		float resultantY = otherPos.y - position.y;
+		float resultantY = otherPos.y - transform.position.y;
 
-		float extentY = fabs(resultantY) - (scale.y + other.getScale().y) / 2;
+		float aExtentY = collider.max.y;
+		float bExtentY = other.getCollider().max.y;
 
-		if (extentY <= 0)
+		if (fabs(resultantY )<= aExtentY + bExtentY)
 		{
  			return true;
 		}

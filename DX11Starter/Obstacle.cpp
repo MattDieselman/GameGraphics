@@ -1,7 +1,5 @@
 #include "Obstacle.h"
 
-
-
 bool Obstacle::checkCollision(Entity *a)
 {
 	if (a->getPosition().x > getPosition().x - getScale().x && a->getPosition().x < getPosition().x + getScale().x) {
@@ -18,11 +16,10 @@ Obstacle::Obstacle():
 	Entity(){
 }
 
-Obstacle::Obstacle(Mesh * mesh_, Material * material_):
-	Entity(mesh_, material_)
+Obstacle::Obstacle(Mesh * mesh, Material * material, ColliderType colliderType):
+	Entity(mesh, material, colliderType)
 {
 }
-
 
 Obstacle::~Obstacle()
 {

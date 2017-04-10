@@ -127,10 +127,12 @@
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Obstacle.cpp" />
+    <ClCompile Include="PhysicsManager.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DXCore.h" />
     <ClInclude Include="Entity.h" />
@@ -138,7 +140,10 @@
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Obstacle.h" />
+    <ClInclude Include="PhysicsManager.h" />
+    <ClInclude Include="Rigidbody.h" />
     <ClInclude Include="SimpleShader.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
