@@ -4,6 +4,7 @@
 
 #include "DXCore.h"
 #include "PhysicsManager.h"
+#include "InputManager.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
 #include "Obstacle.h"
@@ -55,11 +56,8 @@ private:
 	DirectX::XMFLOAT4X4 worldMatrix;
 	DirectX::XMFLOAT3 worldUp;
 
-	// Keeps track of the old mouse position.  Useful for 
-	// determining how far the mouse moved in a single frame.
-	POINT prevMousePos;
-
 	// Managers
 	PhysicsManager physicsManager;
+	InputManager inputManager;
 };
 
