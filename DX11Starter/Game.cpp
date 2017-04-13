@@ -338,13 +338,13 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[1]->setPosition(XMFLOAT3(10, -2, 0));
 	}*/
 
-	gameObjects[1]->Move(-.005, XMFLOAT3(1,0,0));
+	gameObjects[1]->Move(-5 * deltaTime, XMFLOAT3(1,0,0));
 	if (gameObjects[1]->getPosition().x < -10)
 	{
 		gameObjects[1]->setPosition(XMFLOAT3(10, 2, 0));
 	}
 
-	gameObjects[2]->Move(-.005, XMFLOAT3(1, 0, 0));
+	gameObjects[2]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
 	if (gameObjects[2]->getPosition().x < -10)
 	{
 		gameObjects[2]->setPosition(XMFLOAT3(10, -2, 0));
@@ -373,7 +373,7 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[0]->setPosition(XMFLOAT3(gameObjects[0]->getPosition().x, -3, 0));
 	}
 
-	static_cast<Enemy*>(gameObjects[3])->update(*gameObjects[0], 0.01f, deltaTime);
+	static_cast<Enemy*>(gameObjects[3])->update(*gameObjects[0], 10.f, deltaTime);
 	if (CollisionCheck[gameObjects[0]->getCollider().colliderType][gameObjects[3]->getCollider().colliderType](*gameObjects[0], *gameObjects[3]) ||
 		gameObjects[3]->getPosition().x < -10)
 	{

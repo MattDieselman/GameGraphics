@@ -17,17 +17,17 @@ void InputManager::update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3
 {
 	// PLAYER CONTROLS
 	if (GetAsyncKeyState(VK_UP) & 0x8000) {
-		player->Move(0.015, XMFLOAT3(0, 1, 0));
+		player->Move(15 * deltaTime, XMFLOAT3(0, 1, 0));
 	}
 	else
 	{
-		player->Move(0.01, XMFLOAT3(0, -1, 0));
+		player->Move(10 * deltaTime, XMFLOAT3(0, -1, 0));
 	}
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-		player->Move(0.005, XMFLOAT3(-1, 0, 0));
+		player->Move(5 * deltaTime, XMFLOAT3(-1, 0, 0));
 	}
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-		player->Move(0.005, XMFLOAT3(1, 0, 0));
+		player->Move(5 * deltaTime, XMFLOAT3(1, 0, 0));
 	}
 
 	/*

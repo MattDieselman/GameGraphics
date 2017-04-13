@@ -2,6 +2,7 @@
 #include <vector>
 #include "Entity.h"
 #include "Camera.h"
+#include "DXCore.h"
 
 class InputManager
 {
