@@ -9,7 +9,7 @@ public:
 	InputManager();
 	~InputManager();
 
-	void update(Entity* player);
+	void update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3 worldUp);
 	void onMouseDown(WPARAM buttonState, int x, int y, HWND* hWnd);
 	void onMouseUp(WPARAM buttonState, int x, int y, Camera* cam);
 	void onMouseMove(WPARAM buttonState, int x, int y, Camera* cam);
@@ -17,7 +17,9 @@ public:
 	
 private:
 	POINT prevMousePos;
-	//HWND* hWnd;
+	//HWND* hWnd; // error
 	//Camera* cam;
+	//XMFLOAT3* worldUp; //override error?
+	//Entity* player
 };
 

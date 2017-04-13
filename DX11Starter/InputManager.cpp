@@ -13,8 +13,9 @@ InputManager::~InputManager()
 
 // ---------- KEYBOARD INPUT ---------------------------------------------------
 
-void InputManager::update(Entity* player)
+void InputManager::update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3 worldUp)
 {
+	// PLAYER CONTROLS
 	if (GetAsyncKeyState(VK_UP) & 0x8000) {
 		player->Move(0.015, XMFLOAT3(0, 1, 0));
 	}
@@ -34,6 +35,39 @@ void InputManager::update(Entity* player)
 		// use ability
 	}
 	*/
+
+	// CAMERA CONTROLS
+	if (GetAsyncKeyState('X') & 0x8000) {
+		cam->MoveYAxis(-.5*deltaTime);
+	}
+	if (GetAsyncKeyState('W') & 0x8000) {
+		cam->Move(cam->getDir(), 1 * deltaTime);
+	}
+	if (GetAsyncKeyState('S') & 0x8000) {
+		XMVECTOR temp1;
+		XMFLOAT3 temp2;
+		temp1 = DirectX::XMVectorNegate(XMLoadFloat3(&cam->getDir()));
+		XMStoreFloat3(&temp2, temp1);
+		cam->Move(temp2, 1 * deltaTime);
+	}
+	if (GetAsyncKeyState('A') & 0x8000) {
+
+		XMVECTOR tempDir = XMLoadFloat3(&cam->getDir());
+		XMVECTOR tempUp = XMLoadFloat3(&worldUp);
+		XMFLOAT3 tempDest;
+		XMStoreFloat3(&tempDest, DirectX::XMVector3Cross(tempDir, tempUp));
+		cam->Move(tempDest, 1 * deltaTime);
+	}
+	if (GetAsyncKeyState('D') & 0x8000) {
+
+		XMVECTOR tempDir = XMLoadFloat3(&cam->getDir());
+		XMVECTOR tempUp = XMLoadFloat3(&worldUp);
+		XMVECTOR tempNeg = DirectX::XMVectorNegate(DirectX::XMVector3Cross(tempDir, tempUp));
+		XMFLOAT3 tempDest;
+		XMStoreFloat3(&tempDest, tempNeg);
+		cam->Move(tempDest, 1 * deltaTime);
+	}
+	
 }
 
 // ---------- MOUSE INPUT ------------------------------------------------------
