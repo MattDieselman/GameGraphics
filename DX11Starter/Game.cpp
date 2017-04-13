@@ -318,10 +318,6 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {	
-	// Quit if the escape key is pressed
-	if (GetAsyncKeyState(VK_ESCAPE))
-		Quit();
-
 	cam->Update();
 	inputManager.update(gameObjects[0], cam, deltaTime, worldUp);
 

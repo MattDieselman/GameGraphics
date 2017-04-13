@@ -15,6 +15,10 @@ InputManager::~InputManager()
 
 void InputManager::update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3 worldUp)
 {
+	// Quit if the escape key is pressed
+	if (GetAsyncKeyState(VK_ESCAPE))
+		PostQuitMessage(0);
+
 	// PLAYER CONTROLS
 	if (GetAsyncKeyState(VK_UP) & 0x8000) {
 		player->Move(15 * deltaTime, XMFLOAT3(0, 1, 0));
