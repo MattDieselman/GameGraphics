@@ -44,7 +44,7 @@ void Entity::init(ColliderType colliderType, float mass)
 void Entity::update(float dt)
 {
 	XMVECTOR pos = XMLoadFloat3(&transform.position);
-	pos += XMLoadFloat3(&rigidbody.velocity);
+	pos += XMLoadFloat3(&rigidbody.velocity) * dt;
 	XMStoreFloat3(&transform.position, pos);
 }
 

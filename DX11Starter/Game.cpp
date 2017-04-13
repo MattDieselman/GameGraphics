@@ -319,7 +319,7 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {	
 	cam->Update();
-	inputManager.update(gameObjects[0]);
+	inputManager.update(gameObjects[0], cam, deltaTime, worldUp);
 
 	/*for (Obstacle * o : objects) {
 		o->Move(-.005, XMFLOAT3(1, 0, 0));
@@ -334,13 +334,13 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[1]->setPosition(XMFLOAT3(10, -2, 0));
 	}*/
 
-	gameObjects[1]->Move(-.005, XMFLOAT3(1,0,0));
+	gameObjects[1]->Move(-5 * deltaTime, XMFLOAT3(1,0,0));
 	if (gameObjects[1]->getPosition().x < -10)
 	{
 		gameObjects[1]->setPosition(XMFLOAT3(10, 2, 0));
 	}
 
-	gameObjects[2]->Move(-.005, XMFLOAT3(1, 0, 0));
+	gameObjects[2]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
 	if (gameObjects[2]->getPosition().x < -10)
 	{
 		gameObjects[2]->setPosition(XMFLOAT3(10, -2, 0));
@@ -369,7 +369,7 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[0]->setPosition(XMFLOAT3(gameObjects[0]->getPosition().x, -3, 0));
 	}
 
-	static_cast<Enemy*>(gameObjects[3])->update(*gameObjects[0], 0.01f, deltaTime);
+	static_cast<Enemy*>(gameObjects[3])->update(*gameObjects[0], 10.f, deltaTime);
 	if (CollisionCheck[gameObjects[0]->getCollider().colliderType][gameObjects[3]->getCollider().colliderType](*gameObjects[0], *gameObjects[3]) ||
 		gameObjects[3]->getPosition().x < -10)
 	{
@@ -381,42 +381,6 @@ void Game::Update(float deltaTime, float totalTime)
 	{
 		gameObject->update(deltaTime);
 	}*/
-
-#if defined(DEBUG) || defined(_DEBUG)
-	if (GetAsyncKeyState('X') & 0x8000) {
-		cam->MoveYAxis(-.5*deltaTime);
-	}
-	if (GetAsyncKeyState('W') & 0x8000) {
-		cam->Move(cam->getDir(), 1 * deltaTime);
-	}
-	if (GetAsyncKeyState('S') & 0x8000) {
-		XMVECTOR temp1;
-		XMFLOAT3 temp2;
-		temp1 = DirectX::XMVectorNegate(XMLoadFloat3(&cam->getDir()));
-		XMStoreFloat3(&temp2, temp1);
-		cam->Move(temp2, 1*deltaTime);
-	}
-	if (GetAsyncKeyState('A') & 0x8000) {
-
-		XMVECTOR tempDir = XMLoadFloat3(&cam->getDir());
-		XMVECTOR tempUp = XMLoadFloat3(&worldUp);
-		XMFLOAT3 tempDest;
-		XMStoreFloat3(&tempDest, DirectX::XMVector3Cross(tempDir, tempUp));
-		cam->Move(tempDest, 1 * deltaTime);
-	}
-	if (GetAsyncKeyState('D') & 0x8000) {
-
-		XMVECTOR tempDir = XMLoadFloat3(&cam->getDir());
-		XMVECTOR tempUp = XMLoadFloat3(&worldUp);
-		XMVECTOR tempNeg = DirectX::XMVectorNegate(DirectX::XMVector3Cross(tempDir, tempUp));
-		XMFLOAT3 tempDest;
-		XMStoreFloat3(&tempDest, tempNeg);
-		cam->Move(tempDest, 1 * deltaTime);
-	}
-#endif
-	// Quit if the escape key is pressed
-	if (GetAsyncKeyState(VK_ESCAPE))
-		Quit();
 }
 
 // --------------------------------------------------------
