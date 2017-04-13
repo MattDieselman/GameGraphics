@@ -34,6 +34,8 @@ void InputManager::update(Entity* player)
 		// use ability
 	}
 	*/
+
+
 }
 
 // ---------- MOUSE INPUT ------------------------------------------------------

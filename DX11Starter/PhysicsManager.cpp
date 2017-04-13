@@ -131,13 +131,17 @@ void PhysicsManager::addPair(const Entity& a, const Entity& b)
 	collisionPairs.push_back(std::make_pair(a, b));
 }
 
-void PhysicsManager::update(float dt)
+void PhysicsManager::update(std::vector<Entity*> gameObjects, float dt)
 {
-	for (manifold cPair : collisionPairs)
+	for (Entity* objA : gameObjects)
 	{
-		if (CollisionCheck[cPair.first.getCollider().colliderType][cPair.second.getCollider().colliderType])
+		for (Entity* objB : gameObjects)
 		{
+			if (objA == objB) continue; // Early out if objA and objB are the same
+			if (CollisionCheck[objA->getCollider().colliderType][objB->getCollider().colliderType](*objA, *objB))
+			{
 
+			}
 		}
 	}
 }

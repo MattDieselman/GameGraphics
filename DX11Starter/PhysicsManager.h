@@ -35,6 +35,6 @@ public:
 
 	void addPair(const Entity& a, const Entity& b);
 
-	void update(float dt);
+	void update(std::vector<Entity*> gameObjects, float dt);
 };
 

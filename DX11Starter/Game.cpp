@@ -91,6 +91,28 @@ void Game::Init()
 
 	CreateMatrices();
 	CreateBasicGeometry();
+
+	// Create Game Objects
+	gameObjects.push_back(new Entity(meshes[7]->copy(), materials[1]->copy()));
+	gameObjects[0]->init(ColliderType::SPHERE, 1.f);
+	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[0]->copy()));
+	gameObjects[1]->init(ColliderType::AABB, 1.f);
+	gameObjects[1]->setPosition(XMFLOAT3(5, 2, 0));
+	gameObjects[1]->setScale(XMFLOAT3(1, 2, 1));
+	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[2]->copy()));
+	gameObjects[2]->init(ColliderType::AABB, 1.f);
+	gameObjects[2]->setPosition(XMFLOAT3(-5, -2, 0));
+	gameObjects[2]->setScale(XMFLOAT3(1, 2, 1));
+	gameObjects.push_back(new Enemy(meshes[7]->copy(), materials[2]->copy()));
+	gameObjects[3]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[3]->setPosition(XMFLOAT3(10, 0, 0));
+
+	/*objects.push_back(new Obstacle(meshes[8]->copy(),materials[2]->copy(), ColliderType::AABB));
+	objects[0]->setPosition(XMFLOAT3(5, 2, 0));
+	objects[0]->setScale(XMFLOAT3(1, 2, 1));
+	objects.push_back(new Obstacle(meshes[8]->copy(), materials[2]->copy(), ColliderType::AABB));
+	objects[1]->setPosition(XMFLOAT3(-5, -2, 0));
+	objects[1]->setScale(XMFLOAT3(1, 2, 1));*/
 	
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -276,21 +298,6 @@ void Game::CreateBasicGeometry()
 	meshes.push_back(new Mesh("OBJ Files/helix.obj", device));
 	meshes.push_back(new Mesh("OBJ Files/sphere.obj", device));
 	meshes.push_back(new Mesh("OBJ Files/torus.obj", device));
-
-	gameObjects.push_back(new Entity(meshes[7]->copy(), materials[1]->copy(), ColliderType::SPHERE));
-	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[0]->copy(), ColliderType::AABB));
-	gameObjects[1]->setPosition(XMFLOAT3(5, 2, 0));
-	gameObjects[1]->setScale(XMFLOAT3(1, 2, 1));
-	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[2]->copy(), ColliderType::AABB));
-	gameObjects[2]->setPosition(XMFLOAT3(-5, -2, 0));
-	gameObjects[2]->setScale(XMFLOAT3(1, 2, 1));
-
-	/*objects.push_back(new Obstacle(meshes[8]->copy(),materials[2]->copy(), ColliderType::AABB));
-	objects[0]->setPosition(XMFLOAT3(5, 2, 0));
-	objects[0]->setScale(XMFLOAT3(1, 2, 1));
-	objects.push_back(new Obstacle(meshes[8]->copy(), materials[2]->copy(), ColliderType::AABB));
-	objects[1]->setPosition(XMFLOAT3(-5, -2, 0));
-	objects[1]->setScale(XMFLOAT3(1, 2, 1));*/
 }
 
 
@@ -362,6 +369,20 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[0]->setPosition(XMFLOAT3(gameObjects[0]->getPosition().x, -3, 0));
 	}
 
+	static_cast<Enemy*>(gameObjects[3])->update(*gameObjects[0], 0.01f, deltaTime);
+	if (CollisionCheck[gameObjects[0]->getCollider().colliderType][gameObjects[3]->getCollider().colliderType](*gameObjects[0], *gameObjects[3]) ||
+		gameObjects[3]->getPosition().x < -10)
+	{
+		gameObjects[3]->setPosition(XMFLOAT3(10, 0, 0));
+	}
+	//gameObjects[3]->update(deltaTime);
+
+	/*for (Entity* gameObject : gameObjects)
+	{
+		gameObject->update(deltaTime);
+	}*/
+
+#if defined(DEBUG) || defined(_DEBUG)
 	if (GetAsyncKeyState('X') & 0x8000) {
 		cam->MoveYAxis(-.5*deltaTime);
 	}
@@ -392,6 +413,7 @@ void Game::Update(float deltaTime, float totalTime)
 		XMStoreFloat3(&tempDest, tempNeg);
 		cam->Move(tempDest, 1 * deltaTime);
 	}
+#endif
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
@@ -414,7 +436,9 @@ void Game::Draw(float deltaTime, float totalTime)
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f,
 		0);
+
 	renderManager.DrawAll( context, deltaTime, totalTime, gameObjects, cam, backBufferRTV, depthStencilView);
+
 	//for (Obstacle * object : objects) {
 	//	object->getMat()->getVertexShader()->SetMatrix4x4("world", object->getWorld());//entity1->world);
 	//	object->getMat()->getVertexShader()->SetMatrix4x4("view", cam->getView());
@@ -485,6 +509,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//// Present the back buffer to the user
 	////  - Puts the final frame we're drawing into the window so the user can see it
 	////  - Do this exactly ONCE PER FRAME (always at the very end of the frame)
+
 	swapChain->Present(0, 0);
 }
 

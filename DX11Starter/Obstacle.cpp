@@ -17,7 +17,7 @@ Obstacle::Obstacle():
 }
 
 Obstacle::Obstacle(Mesh * mesh, Material * material, ColliderType colliderType):
-	Entity(mesh, material, colliderType)
+	Entity(mesh, material)
 {
 }
 
