@@ -107,6 +107,8 @@ void Game::Init()
 	gameObjects[3]->init(ColliderType::SPHERE, 1.f);
 	gameObjects[3]->setPosition(XMFLOAT3(10, 0, 0));
 
+	inputManager = InputManager(&hWnd, gameObjects[0], cam, &worldUp);
+
 	/*objects.push_back(new Obstacle(meshes[8]->copy(),materials[2]->copy(), ColliderType::AABB));
 	objects[0]->setPosition(XMFLOAT3(5, 2, 0));
 	objects[0]->setScale(XMFLOAT3(1, 2, 1));
@@ -319,7 +321,7 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {	
 	cam->Update();
-	inputManager.update(gameObjects[0], cam, deltaTime, worldUp);
+	inputManager.update(deltaTime);
 
 	/*for (Obstacle * o : objects) {
 		o->Move(-.005, XMFLOAT3(1, 0, 0));
