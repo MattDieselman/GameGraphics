@@ -21,8 +21,6 @@ Entity::Entity(Mesh * mesh, Material * material)
 	transform.position = XMFLOAT3(0, 0, 0);
 	transform.rotation = XMFLOAT3(0, 0, 0);
 	transform.scale = XMFLOAT3(1, 1, 1);
-
-	calculateCollider();
 }
 
 Entity::~Entity()
@@ -39,6 +37,8 @@ void Entity::init(ColliderType colliderType, float mass)
 	collider.colliderType = colliderType;
 	rigidbody.mass = mass;
 	rigidbody.invMass = mass != 0 ? 1 / mass : 0;
+
+	calculateCollider();
 }
 
 void Entity::update(float dt)

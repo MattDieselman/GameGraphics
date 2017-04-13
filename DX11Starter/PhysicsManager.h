@@ -8,8 +8,8 @@ typedef std::pair<const Entity&, const Entity&> manifold;
 typedef bool (*CollisionCallback)(const Entity& a, const Entity& b);
 extern CollisionCallback CollisionCheck[ColliderType::COUNT][ColliderType::COUNT];
 
-//namespace
-//{
+namespace
+{
 	// Collision check functions
 	bool NoCollision(const Entity& a, const Entity& b);
 	bool AABBvsAABB(const Entity& a, const Entity& b);
@@ -21,7 +21,7 @@ extern CollisionCallback CollisionCheck[ColliderType::COUNT][ColliderType::COUNT
 	bool SpherevsSphere(const Entity& a, const Entity& b);
 	bool SpherevsAABB(const Entity& a, const Entity& b);
 	bool SpherevsOOBB(const Entity& a, const Entity& b);
-//}
+}
 
 class PhysicsManager
 {

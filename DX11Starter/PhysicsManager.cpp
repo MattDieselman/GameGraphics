@@ -11,8 +11,8 @@ CollisionCallback CollisionCheck[ColliderType::COUNT][ColliderType::COUNT] =
 	{	&NoCollision,	&SpherevsAABB,	&SpherevsOOBB,	&SpherevsSphere	}	// Sphere
 };
 
-//namespace
-//{
+namespace
+{
 	bool NoCollision(const Entity& a, const Entity& b)
 	{
 		return false;
@@ -63,7 +63,7 @@ CollisionCallback CollisionCheck[ColliderType::COUNT][ColliderType::COUNT] =
 		XMFLOAT3 distanceSq;
 		XMStoreFloat3(&distanceSq, XMVector3LengthSq(resultantVector - closest));
 
-		float radius = a.getCollider().max.x;
+		float radius = b.getCollider().max.x;
 		
 		if (distanceSq.x < radius * radius)
 		{
@@ -116,7 +116,7 @@ CollisionCallback CollisionCheck[ColliderType::COUNT][ColliderType::COUNT] =
 	{
 		return OOBBvsSphere(b, a);
 	}
-//}
+}
 
 PhysicsManager::PhysicsManager()
 {
