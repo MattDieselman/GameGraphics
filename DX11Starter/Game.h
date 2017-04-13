@@ -8,7 +8,7 @@
 #include "Camera.h"
 #include "DirectionalLight.h"
 #include "Obstacle.h"
-
+#include "RenderManager.h"
 class Game 
 	: public DXCore
 {
@@ -35,13 +35,15 @@ public:
 	void OnMouseWheel(float wheelDelta,   int x, int y);
 
 private:
-	std::vector<ID3D11ShaderResourceView*> textures;
+	//std::vector<ID3D11ShaderResourceView*> textures;
 
 	std::vector<Mesh*> meshes;
 
 	std::vector<DirectionalLight> lights;
 
 	Camera * cam;
+
+	RenderManager renderManager;
 
 	std::vector<Entity*> gameObjects;
 	// std::vector<Obstacle*> objects;
