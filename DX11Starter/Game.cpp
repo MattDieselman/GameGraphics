@@ -318,6 +318,10 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {	
+	// Quit if the escape key is pressed
+	if (GetAsyncKeyState(VK_ESCAPE))
+		Quit();
+
 	cam->Update();
 	inputManager.update(gameObjects[0], cam, deltaTime, worldUp);
 
@@ -381,42 +385,6 @@ void Game::Update(float deltaTime, float totalTime)
 	{
 		gameObject->update(deltaTime);
 	}*/
-
-#if defined(DEBUG) || defined(_DEBUG)
-	if (GetAsyncKeyState('X') & 0x8000) {
-		cam->MoveYAxis(-.5*deltaTime);
-	}
-	if (GetAsyncKeyState('W') & 0x8000) {
-		cam->Move(cam->getDir(), 1 * deltaTime);
-	}
-	if (GetAsyncKeyState('S') & 0x8000) {
-		XMVECTOR temp1;
-		XMFLOAT3 temp2;
-		temp1 = DirectX::XMVectorNegate(XMLoadFloat3(&cam->getDir()));
-		XMStoreFloat3(&temp2, temp1);
-		cam->Move(temp2, 1*deltaTime);
-	}
-	if (GetAsyncKeyState('A') & 0x8000) {
-
-		XMVECTOR tempDir = XMLoadFloat3(&cam->getDir());
-		XMVECTOR tempUp = XMLoadFloat3(&worldUp);
-		XMFLOAT3 tempDest;
-		XMStoreFloat3(&tempDest, DirectX::XMVector3Cross(tempDir, tempUp));
-		cam->Move(tempDest, 1 * deltaTime);
-	}
-	if (GetAsyncKeyState('D') & 0x8000) {
-
-		XMVECTOR tempDir = XMLoadFloat3(&cam->getDir());
-		XMVECTOR tempUp = XMLoadFloat3(&worldUp);
-		XMVECTOR tempNeg = DirectX::XMVectorNegate(DirectX::XMVector3Cross(tempDir, tempUp));
-		XMFLOAT3 tempDest;
-		XMStoreFloat3(&tempDest, tempNeg);
-		cam->Move(tempDest, 1 * deltaTime);
-	}
-#endif
-	// Quit if the escape key is pressed
-	if (GetAsyncKeyState(VK_ESCAPE))
-		Quit();
 }
 
 // --------------------------------------------------------

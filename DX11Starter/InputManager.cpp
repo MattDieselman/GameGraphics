@@ -37,6 +37,7 @@ void InputManager::update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3
 	*/
 
 	// CAMERA CONTROLS
+#if defined(DEBUG) || defined(_DEBUG)
 	if (GetAsyncKeyState('X') & 0x8000) {
 		cam->MoveYAxis(-.5*deltaTime);
 	}
@@ -67,6 +68,7 @@ void InputManager::update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3
 		XMStoreFloat3(&tempDest, tempNeg);
 		cam->Move(tempDest, 1 * deltaTime);
 	}
+#endif
 	
 }
 
