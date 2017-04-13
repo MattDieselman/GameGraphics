@@ -9,6 +9,7 @@
 #include "DirectionalLight.h"
 #include "Obstacle.h"
 #include "RenderManager.h"
+#include "Enemy.h"
 class Game 
 	: public DXCore
 {
@@ -46,7 +47,7 @@ private:
 	RenderManager renderManager;
 
 	std::vector<Entity*> gameObjects;
-	// std::vector<Obstacle*> objects;
+	std::vector<Obstacle*> objects;
 	std::vector<Material*> materials;
 
 	// Initialization helper methods - feel free to customize, combine, etc.

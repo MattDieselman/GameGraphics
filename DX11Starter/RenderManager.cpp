@@ -74,14 +74,15 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 
 void RenderManager::DrawAll(ID3D11DeviceContext * context, float deltaTime, float totalTime,std::vector<Entity*> gameObjects,Camera * cam, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView)
 {
-	const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
+	/*const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
 
 	context->ClearRenderTargetView(backBufferRTV, color);
 	context->ClearDepthStencilView(
 		depthStencilView,
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f,
-		0);
+		0);*/
+
 	for each (Entity* object in gameObjects)
 	{
 		// Send data to shader variables

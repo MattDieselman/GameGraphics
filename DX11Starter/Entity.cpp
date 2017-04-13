@@ -9,13 +9,11 @@ Entity::Entity()
 	collider.colliderType = ColliderType::NONE;
 }
 
-Entity::Entity(Mesh * mesh, Material * material, ColliderType colliderType)
+Entity::Entity(Mesh * mesh, Material * material)
 {
 	this->mesh = mesh;
 
 	mat = material;
-
-	collider.colliderType = colliderType;
 
 	XMMATRIX W = XMMatrixIdentity();
 	XMStoreFloat4x4(&world, XMMatrixTranspose(W));
@@ -34,6 +32,21 @@ Entity::~Entity()
 }
 
 // Gets / Sets
+
+void Entity::init(ColliderType colliderType, float mass)
+{
+	active = true;
+	collider.colliderType = colliderType;
+	rigidbody.mass = mass;
+	rigidbody.invMass = mass != 0 ? 1 / mass : 0;
+}
+
+void Entity::update(float dt)
+{
+	XMVECTOR pos = XMLoadFloat3(&transform.position);
+	pos += XMLoadFloat3(&rigidbody.velocity);
+	XMStoreFloat3(&transform.position, pos);
+}
 
 XMFLOAT4X4 Entity::getWorld()
 {

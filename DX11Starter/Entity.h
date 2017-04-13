@@ -4,22 +4,29 @@
 #include "Material.h"
 #include "Transform.h"
 #include "Collider.h"
+#include "Rigidbody.h"
 
 class Entity
 {
-private:
+protected:
 
 	DirectX::XMFLOAT4X4 world;
 	Transform transform;
 	Mesh* mesh;
 	Material * mat;
 	Collider collider;
+	Rigidbody rigidbody;
 
 public:
 
 	Entity();
-	Entity(Mesh* mesh,Material * material, ColliderType colliderType);
+	Entity(Mesh* mesh,Material * material);
 	~Entity();
+
+	bool active;
+
+	virtual void init(ColliderType colliderType, float mass);
+	virtual void update(float dt);
 
 	DirectX::XMFLOAT4X4 getWorld();
 	DirectX::XMFLOAT3 getPosition() const;
