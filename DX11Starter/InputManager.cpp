@@ -21,7 +21,7 @@ void InputManager::update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3
 
 	// PLAYER CONTROLS
 	if (GetAsyncKeyState(VK_UP) & 0x8000) {
-		player->Move(15 * deltaTime, XMFLOAT3(0, 1, 0));
+		player->Move(10 * deltaTime, XMFLOAT3(0, 1, 0));
 	}
 	else
 	{

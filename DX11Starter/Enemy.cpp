@@ -41,9 +41,9 @@ void Enemy::update(const Entity& target, float maxSpeed, float dt)
 {
 	rigidbody.velocity = seek(target, maxSpeed);
 	rigidbody.velocity.x = fabs(rigidbody.velocity.x) * -1;
-	if (rigidbody.velocity.y > 0.005)
+	if (rigidbody.velocity.y > 2.5 || rigidbody.velocity.y < -2.5)
 	{
-		rigidbody.velocity.y = 0.005;
+		rigidbody.velocity.y = (rigidbody.velocity.y / fabs(rigidbody.velocity.y)) * 2.5;
 		rigidbody.velocity.x = -maxSpeed;
 	}
 	//rigidbody.ApplyForce(dt);
