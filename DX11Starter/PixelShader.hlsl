@@ -1,11 +1,9 @@
-
-
-
 // Struct representing the data we expect to receive from earlier pipeline stages
 // - Should match the output of our corresponding vertex shader
 // - The name of the struct itself is unimportant
 // - The variable names don't have to match other shaders (just the semantics)
 // - Each variable must have a semantic, which defines its usage
+
 struct VertexToPixel
 {
 	// Data type
@@ -16,18 +14,32 @@ struct VertexToPixel
 	float4 position		: SV_POSITION;
 	float2 uv			: TEXCOORD;        // RGBA color
 	float3 normal		: NORMAL;
+	float3 worldPos		: POSITION;
 };
-struct DirectionalLight {
-	float4 AmbientColor;
-	float4 DiffuseColor;
-	float3 Direction;
+
+struct DirectionalLight
+{
+	float4 ambientColor;
+	float4 diffuseColor;
+	float3 direction;
+};
+
+struct PointLight
+{
+	float4 ambientColor;
+	float4 diffuseColor;
+	float3 location;
 };
 
 cbuffer data : register(b0)
 {
-	DirectionalLight light;
-	DirectionalLight light2;
+	DirectionalLight dirLight;
+
+	PointLight pointLight;
+
+	float3 cameraPos;
 };
+
 Texture2D diffuseTexture : register(t0);
 SamplerState sampState : register(s0);
 
@@ -42,20 +54,35 @@ SamplerState sampState : register(s0);
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
+	// Re-normalize interpolated normals
+	input.normal = normalize(input.normal);
+
 	// Just return the input color
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
 	float4 surfaceColor = diffuseTexture.Sample(sampState,input.uv);
 
-	float3 dirTo = normalize(-light.Direction);
-	float3 lightAmount = saturate(dot(input.normal, dirTo));
-	float4 light1Tot = (light.DiffuseColor*(float4(lightAmount,1)))+light.AmbientColor;
-	float3 dirTo2 = normalize(-light2.Direction);
+	// Directional light calculations
+	float3 dirToDL = normalize(-dirLight.direction);
+	float dLightAmount = saturate(dot(input.normal, dirToDL));
+	float4 dLightTotal = (dirLight.diffuseColor * dLightAmount) + dirLight.ambientColor;
+	
+	/*float3 dirTo2 = normalize(-light2.Direction);
 	float3 light2Amount = saturate(dot(input.normal, dirTo2));
-	float4 light2Tot = (light2.DiffuseColor*(float4(light2Amount, 1))) + light2.AmbientColor;
-	return (light1Tot*surfaceColor) + (light2Tot *surfaceColor);
-	//return float4(input.normal,1);
-	//return light.DiffuseColor;
-	//return float4(1, 0, 0, 1);
+	float4 light2Total = (light2.diffuseColor * (float4(light2Amount, 1))) + light2.ambientColor;*/
+
+	// Point light calculations
+	float3 dirToPL = normalize(pointLight.location - input.worldPos);
+	float pLightAmount = saturate(dot(input.normal, dirToPL));
+	float4 pLightTotal = (pointLight.diffuseColor * pLightAmount) + pointLight.ambientColor;
+
+	// Calculate specular amount for Point
+	float3 dirToCamera = normalize(cameraPos - input.worldPos);
+	float3 reflection = reflect(-dirToPL, input.normal);
+	float specular = pow(saturate(dot(reflection, dirToCamera)), 64);
+
+	// Final lighting calculations
+	return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + specular.rrrr;
+	//return (pLightTotal * surfaceColor) + specular.rrrr;
 }

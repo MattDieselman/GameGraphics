@@ -146,6 +146,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Obstacle.h" />
     <ClInclude Include="PhysicsManager.h" />
+    <ClInclude Include="PointLight.h" />
     <ClInclude Include="RenderManager.h" />
     <ClInclude Include="Rigidbody.h" />
     <ClInclude Include="SimpleShader.h" />

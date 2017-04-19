@@ -23,6 +23,7 @@ public:
 	DirectX::XMFLOAT4X4 getView();
 	DirectX::XMFLOAT4X4 getProj();
 	DirectX::XMFLOAT3 getDir();
+	DirectX::XMFLOAT3 getPosition();
 
 	void Update();
 	void Move(DirectX::XMFLOAT3 dir, float speed);

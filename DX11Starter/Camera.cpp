@@ -49,6 +49,11 @@ XMFLOAT3 Camera::getDir()
 	return direction;
 }
 
+DirectX::XMFLOAT3 Camera::getPosition()
+{
+	return position;
+}
+
 // Methods
 
 void Camera::Update()

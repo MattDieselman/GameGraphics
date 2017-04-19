@@ -17,7 +17,7 @@ std::vector<Material*> RenderManager::getMaterials()
 }
 
 
-void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* context, std::vector<DirectionalLight> lights)
+void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* context, DirectionalLight dirLight, PointLight pointLight)
 {
 	SimpleVertexShader* vertexShader = new SimpleVertexShader(device, context);
 	if (!vertexShader->LoadShaderFile(L"Debug/VertexShader.cso"))
@@ -28,15 +28,14 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 		pixelShader->LoadShaderFile(L"PixelShader.hlsl");
 
 	//Set Lighting
-
 	pixelShader->SetData(
-		"light",
-		&lights[0],
+		"dirLight",
+		&dirLight,
 		sizeof(DirectionalLight));
 	pixelShader->SetData(
-		"light2",
-		&lights[1],
-		sizeof(DirectionalLight));
+		"pointLight",
+		&pointLight,
+		sizeof(PointLight));
 	pixelShader->CopyAllBufferData();
 
 	ID3D11ShaderResourceView* texture1;
@@ -72,17 +71,8 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	materials[2]->AttatchTexture(textures[2], sampler);
 }
 
-void RenderManager::DrawAll(ID3D11DeviceContext * context, float deltaTime, float totalTime,std::vector<Entity*> gameObjects,Camera * cam, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView)
+void RenderManager::DrawAll(ID3D11DeviceContext * context, float deltaTime, float totalTime, std::vector<Entity*> gameObjects, Camera * cam, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView)
 {
-	/*const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
-
-	context->ClearRenderTargetView(backBufferRTV, color);
-	context->ClearDepthStencilView(
-		depthStencilView,
-		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-		1.0f,
-		0);*/
-
 	for each (Entity* object in gameObjects)
 	{
 		// Send data to shader variables
@@ -107,9 +97,9 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, float deltaTime, floa
 		//    you'll need to swap the current shaders before each draw
 		object->getMat()->getPixelShader()->SetShaderResourceView("diffuseTexture", object->getMat()->getTexture());
 		object->getMat()->getPixelShader()->SetSamplerState("sampState", object->getMat()->getSampler());
+		object->getMat()->getPixelShader()->SetFloat3("cameraPos", cam->getPosition());
 		object->getMat()->getPixelShader()->CopyAllBufferData();
 		object->getMat()->getPixelShader()->SetShader();
-
 
 		// Set buffers in the input assembler
 		//  - Do this ONCE PER OBJECT you're drawing, since each object might

@@ -72,21 +72,21 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	lights.push_back(DirectionalLight());
-	lights[0].ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
-	lights[0].diffuseColor = XMFLOAT4(1, 0, 0, 1);
-	lights[0].direction = XMFLOAT3(1, 0, 0);
+	//lights.push_back(DirectionalLight());
+	dirLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
+	dirLight.diffuseColor = XMFLOAT4(1, 0, 0, 1);
+	dirLight.direction = XMFLOAT3(-1, -1, 0);
 	
-	lights.push_back(DirectionalLight());
-	lights[1].ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
-	lights[1].diffuseColor = XMFLOAT4(0,1, 1, 1);
-	lights[1].direction = XMFLOAT3(-1, -10, 1);
+	//lights.push_back(DirectionalLight());
+	pointLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
+	pointLight.diffuseColor = XMFLOAT4(0, 0, 1, 1);
+	pointLight.location = XMFLOAT3(0, 0, 0);
 
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	//LoadShaders();
-	renderManager.LoadShaders(device,context,lights);
+	renderManager.LoadShaders(device, context, dirLight, pointLight);
 	materials = renderManager.getMaterials();
 
 	CreateMatrices();
@@ -319,7 +319,7 @@ void Game::OnResize()
 // Update your game here - user input, move objects, AI, etc.
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
-{	
+{
 	cam->Update();
 	inputManager.update(deltaTime);
 
@@ -347,15 +347,7 @@ void Game::Update(float deltaTime, float totalTime)
 	{
 		gameObjects[2]->setPosition(XMFLOAT3(10, -2, 0));
 	}
-	/*
-	if (GetAsyncKeyState(' ') & 0x8000) {
-		gameObjects[0]->Move(0.015, XMFLOAT3(0, 1, 0));
-	}
-	else
-	{
-		gameObjects[0]->Move(0.01, XMFLOAT3(0, -1, 0));
-	}
-	*/
+
 	if (CollisionCheck[gameObjects[0]->getCollider().colliderType][gameObjects[1]->getCollider().colliderType](*gameObjects[0], *gameObjects[1]) ||
 		CollisionCheck[gameObjects[0]->getCollider().colliderType][gameObjects[2]->getCollider().colliderType](*gameObjects[0], *gameObjects[2]))
 	{
@@ -371,18 +363,12 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[0]->setPosition(XMFLOAT3(gameObjects[0]->getPosition().x, -3, 0));
 	}
 
-	static_cast<Enemy*>(gameObjects[3])->update(*gameObjects[0], 10.f, deltaTime);
+	static_cast<Enemy*>(gameObjects[3])->update(*gameObjects[0], 7.5f, deltaTime);
 	if (CollisionCheck[gameObjects[0]->getCollider().colliderType][gameObjects[3]->getCollider().colliderType](*gameObjects[0], *gameObjects[3]) ||
 		gameObjects[3]->getPosition().x < -10)
 	{
 		gameObjects[3]->setPosition(XMFLOAT3(10, 0, 0));
 	}
-	//gameObjects[3]->update(deltaTime);
-
-	/*for (Entity* gameObject : gameObjects)
-	{
-		gameObject->update(deltaTime);
-	}*/
 }
 
 // --------------------------------------------------------
@@ -404,77 +390,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		0);
 
 	renderManager.DrawAll( context, deltaTime, totalTime, gameObjects, cam, backBufferRTV, depthStencilView);
-
-	//for (Obstacle * object : objects) {
-	//	object->getMat()->getVertexShader()->SetMatrix4x4("world", object->getWorld());//entity1->world);
-	//	object->getMat()->getVertexShader()->SetMatrix4x4("view", cam->getView());
-	//	object->getMat()->getVertexShader()->SetMatrix4x4("projection", cam->getProj());
-	//	object->getMat()->getVertexShader()->CopyAllBufferData();
-	//	object->getMat()->getVertexShader()->SetShader();
-
-	//	object->getMat()->getPixelShader()->SetShaderResourceView("diffuseTexture", object->getMat()->getTexture());
-	//	object->getMat()->getPixelShader()->SetSamplerState("sampState", object->getMat()->getSampler());
-	//	object->getMat()->getPixelShader()->CopyAllBufferData();
-	//	object->getMat()->getPixelShader()->SetShader();
-
-	//	UINT stride = sizeof(Vertex);
-	//	UINT offset = 0;
-	//	ID3D11Buffer *verts = object->getMesh()->getVertexBuffer();
-	//	context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
-	//	context->IASetIndexBuffer(object->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
-
-	//	context->DrawIndexed(
-	//		object->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-	//		0,     // Offset to the first index we want to use
-	//		0);    // Offset to add to each index when looking up vertices
-	//}
-
-	//for each (Entity* object in gameObjects)
-	//{
-	//	// Send data to shader variables
-	//	//  - Do this ONCE PER OBJECT you're drawing
-	//	//  - This is actually a complex process of copying data to a local buffer
-	//	//    and then copying that entire buffer to the GPU.  
-	//	//  - The "SimpleShader" class handles all of that for you.
-
-	//	object->getMat()->getVertexShader()->SetMatrix4x4("world", object->getWorld());//entity1->world);
-	//	object->getMat()->getVertexShader()->SetMatrix4x4("view", cam->getView());
-	//	object->getMat()->getVertexShader()->SetMatrix4x4("projection", cam->getProj());
-	//	object->getMat()->getVertexShader()->CopyAllBufferData();
-	//	object->getMat()->getVertexShader()->SetShader();
-
-	//	// Once you've set all of the data you care to change for
-	//	// the next draw call, you need to actually send it to the GPU
-	//	//  - If you skip this, the "SetMatrix" calls above won't make it to the GPU!
-
-	//	// Set the vertex and pixel shaders to use for the next Draw() command
-	//	//  - These don't technically need to be set every frame...YET
-	//	//  - Once you start applying different shaders to different objects,
-	//	//    you'll need to swap the current shaders before each draw
-	//	object->getMat()->getPixelShader()->SetShaderResourceView("diffuseTexture", object->getMat()->getTexture());
-	//	object->getMat()->getPixelShader()->SetSamplerState("sampState", object->getMat()->getSampler());
-	//	object->getMat()->getPixelShader()->CopyAllBufferData();
-	//	object->getMat()->getPixelShader()->SetShader();
-
-
-	//	// Set buffers in the input assembler
-	//	//  - Do this ONCE PER OBJECT you're drawing, since each object might
-	//	//    have different geometry.
-	//	UINT stride = sizeof(Vertex);
-	//	UINT offset = 0;
-	//	ID3D11Buffer *verts = object->getMesh()->getVertexBuffer();
-	//	context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
-	//	context->IASetIndexBuffer(object->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
-
-	//	context->DrawIndexed(
-	//		object->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-	//		0,     // Offset to the first index we want to use
-	//		0);    // Offset to add to each index when looking up vertices
-	//}
-	//
-	//// Present the back buffer to the user
-	////  - Puts the final frame we're drawing into the window so the user can see it
-	////  - Do this exactly ONCE PER FRAME (always at the very end of the frame)
 
 	swapChain->Present(0, 0);
 }

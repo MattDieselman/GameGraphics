@@ -7,9 +7,11 @@
 #include "InputManager.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
+#include "PointLight.h"
 #include "Obstacle.h"
 #include "RenderManager.h"
 #include "Enemy.h"
+
 class Game 
 	: public DXCore
 {
@@ -40,7 +42,8 @@ private:
 
 	std::vector<Mesh*> meshes;
 
-	std::vector<DirectionalLight> lights;
+	DirectionalLight dirLight;
+	PointLight pointLight;
 
 	Camera * cam;
 
