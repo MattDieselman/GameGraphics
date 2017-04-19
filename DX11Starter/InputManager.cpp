@@ -7,13 +7,21 @@ InputManager::InputManager()
 {
 }
 
+InputManager::InputManager(HWND* _hWnd, Entity* _player, Camera* _cam, DirectX::XMFLOAT3* _worldUp)
+{
+	hWnd = _hWnd;
+	player = _player;
+	cam = _cam;
+	worldUp = _worldUp;
+}
+
 InputManager::~InputManager()
 {
 }
 
 // ---------- KEYBOARD INPUT ---------------------------------------------------
 
-void InputManager::update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3 worldUp)
+void InputManager::update(float deltaTime)
 {
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
@@ -58,7 +66,7 @@ void InputManager::update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3
 	if (GetAsyncKeyState('A') & 0x8000) {
 
 		XMVECTOR tempDir = XMLoadFloat3(&cam->getDir());
-		XMVECTOR tempUp = XMLoadFloat3(&worldUp);
+		XMVECTOR tempUp = XMLoadFloat3(worldUp);
 		XMFLOAT3 tempDest;
 		XMStoreFloat3(&tempDest, DirectX::XMVector3Cross(tempDir, tempUp));
 		cam->Move(tempDest, 1 * deltaTime);
@@ -66,7 +74,7 @@ void InputManager::update(Entity* player, Camera* cam, float deltaTime, XMFLOAT3
 	if (GetAsyncKeyState('D') & 0x8000) {
 
 		XMVECTOR tempDir = XMLoadFloat3(&cam->getDir());
-		XMVECTOR tempUp = XMLoadFloat3(&worldUp);
+		XMVECTOR tempUp = XMLoadFloat3(worldUp);
 		XMVECTOR tempNeg = DirectX::XMVectorNegate(DirectX::XMVector3Cross(tempDir, tempUp));
 		XMFLOAT3 tempDest;
 		XMStoreFloat3(&tempDest, tempNeg);
