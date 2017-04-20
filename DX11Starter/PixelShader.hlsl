@@ -12,9 +12,10 @@ struct VertexToPixel
 	//  |    |                |
 	//  v    v                v
 	float4 position		: SV_POSITION;
-	float2 uv			: TEXCOORD;        // RGBA color
-	float3 normal		: NORMAL;
 	float3 worldPos		: POSITION;
+	float3 normal		: NORMAL;
+	float3 tangent		: TANGENT;
+	float2 uv			: TEXCOORD;
 };
 
 struct DirectionalLight
@@ -31,17 +32,29 @@ struct PointLight
 	float3 location;
 };
 
+struct SpotLight
+{
+	float4 ambientColor;
+	float4 diffuseColor;
+	float3 location;
+	float3 direction;
+	float angle;
+};
+
 cbuffer data : register(b0)
 {
 	DirectionalLight dirLight;
 
 	PointLight pointLight;
 
+	SpotLight spotLight;
+
 	float3 cameraPos;
 };
 
-Texture2D diffuseTexture : register(t0);
-SamplerState sampState : register(s0);
+Texture2D diffuseTexture	: register(t0);
+Texture2D normalMap			: register(t1);
+SamplerState sampState		: register(s0);
 
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
@@ -56,12 +69,17 @@ float4 main(VertexToPixel input) : SV_TARGET
 {
 	// Re-normalize interpolated normals
 	input.normal = normalize(input.normal);
+	input.tangent = normalize(input.tangent);
 
-	// Just return the input color
-	// - This color (like most values passing through the rasterizer) is 
-	//   interpolated for each pixel between the corresponding vertices 
-	//   of the triangle we're rendering
-	float4 surfaceColor = diffuseTexture.Sample(sampState,input.uv);
+	// Get the normal map sample
+	float4 normalFromMap = normalMap.Sample(sampState, input.uv) * 2 - 1;
+
+	// Calculate the TBN matrix to go from tangent space to world space
+	float3 N = input.normal;
+	float3 T = normalize(input.tangent - N * dot(input.tangent, N));
+	float3 B = cross(T, N);
+	float3x3 TBN = float3x3(T, B, N);
+	input.normal = normalize(mul(normalFromMap, TBN));
 
 	// Directional light calculations
 	float3 dirToDL = normalize(-dirLight.direction);
@@ -82,7 +100,17 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 reflection = reflect(-dirToPL, input.normal);
 	float specular = pow(saturate(dot(reflection, dirToCamera)), 64);
 
+	// Spot light calculations
+	float3 dirToSL = normalize(spotLight.location - input.worldPos);
+	float angleToObj = acos(dot(-dirToSL, spotLight.direction));
+	uint objInRange = step(angleToObj, spotLight.angle); // If angleToObj is bigger return 0, else return 1
+	float sLightAmount = saturate(dot(input.normal, dirToSL)) * objInRange;
+	float4 sLightTotal = (spotLight.diffuseColor * sLightAmount) + spotLight.ambientColor;
+
+	// Sample the texture
+	float4 surfaceColor = diffuseTexture.Sample(sampState, input.uv);
+
 	// Final lighting calculations
-	return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + specular.rrrr;
-	//return (pLightTotal * surfaceColor) + specular.rrrr;
+	return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor) + specular.rrrr;
+	//return (sLightTotal * surfaceColor);
 }

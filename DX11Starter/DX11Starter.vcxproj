@@ -150,6 +150,7 @@
     <ClInclude Include="RenderManager.h" />
     <ClInclude Include="Rigidbody.h" />
     <ClInclude Include="SimpleShader.h" />
+    <ClInclude Include="SpotLight.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>

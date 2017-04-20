@@ -31,6 +31,12 @@
     <Filter Include="Source Files\Core">
       <UniqueIdentifier>{6bfe3a72-aaf8-4778-a2b6-52f06b4fef55}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ObjHierarchy">
+      <UniqueIdentifier>{1033f8a3-9c83-476b-b6d2-154bb506a953}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ObjHierarchy">
+      <UniqueIdentifier>{3c7a6911-4ec4-4a21-9895-8f3860df9cfb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -39,16 +45,10 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Entity.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Obstacle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DXCore.cpp">
@@ -70,7 +70,13 @@
       <Filter>Source Files\Core</Filter>
     </ClCompile>
     <ClCompile Include="Enemy.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\ObjHierarchy</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Source Files\ObjHierarchy</Filter>
+    </ClCompile>
+    <ClCompile Include="Obstacle.cpp">
+      <Filter>Source Files\ObjHierarchy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -80,16 +86,10 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Entity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Obstacle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DXCore.h">
@@ -122,11 +122,20 @@
     <ClInclude Include="RenderManager.h">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PointLight.h">
       <Filter>Header Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="SpotLight.h">
+      <Filter>Header Files\Structs</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Header Files\ObjHierarchy</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>Header Files\ObjHierarchy</Filter>
+    </ClInclude>
+    <ClInclude Include="Obstacle.h">
+      <Filter>Header Files\ObjHierarchy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
+#include "SpotLight.h"
 #include "Obstacle.h"
 #include "RenderManager.h"
 #include "Enemy.h"
@@ -44,6 +45,7 @@ private:
 
 	DirectionalLight dirLight;
 	PointLight pointLight;
+	SpotLight spotLight;
 
 	Camera * cam;
 

@@ -49,5 +49,6 @@ private:
 	std::vector<Vertex> vertices;
 
 	void createBuffers(Vertex* vertices, int numVerts, unsigned int* indices, int numInds, ID3D11Device* device);
-};
 
+	void CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices, int numIndices);
+};

@@ -82,24 +82,30 @@ void Game::Init()
 	pointLight.diffuseColor = XMFLOAT4(0, 0, 1, 1);
 	pointLight.location = XMFLOAT3(0, 0, 0);
 
+	spotLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
+	spotLight.diffuseColor = XMFLOAT4(0, 1, 0, 1);
+	spotLight.location = XMFLOAT3(2, 0, 0);
+	spotLight.direction = XMFLOAT3(-1, 0, 0);
+	spotLight.angle = XM_PIDIV4;
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	//LoadShaders();
-	renderManager.LoadShaders(device, context, dirLight, pointLight);
+	renderManager.LoadShaders(device, context);
 	materials = renderManager.getMaterials();
 
 	CreateMatrices();
 	CreateBasicGeometry();
 
 	// Create Game Objects
-	gameObjects.push_back(new Entity(meshes[7]->copy(), materials[1]->copy()));
+	gameObjects.push_back(new Entity(meshes[7]->copy(), materials[3]->copy()));
 	gameObjects[0]->init(ColliderType::SPHERE, 1.f);
 	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[0]->copy()));
 	gameObjects[1]->init(ColliderType::AABB, 1.f);
 	gameObjects[1]->setPosition(XMFLOAT3(5, 2, 0));
 	gameObjects[1]->setScale(XMFLOAT3(1, 2, 1));
-	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[2]->copy()));
+	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[1]->copy()));
 	gameObjects[2]->init(ColliderType::AABB, 1.f);
 	gameObjects[2]->setPosition(XMFLOAT3(-5, -2, 0));
 	gameObjects[2]->setScale(XMFLOAT3(1, 2, 1));
@@ -389,7 +395,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
-	renderManager.DrawAll( context, deltaTime, totalTime, gameObjects, cam, backBufferRTV, depthStencilView);
+	// Set Data that is the same for the entire scene
+	renderManager.setSceneData(cam, dirLight, pointLight, spotLight);
+
+	renderManager.DrawAll(context, deltaTime, totalTime, gameObjects, cam, backBufferRTV, depthStencilView);
 
 	swapChain->Present(0, 0);
 }

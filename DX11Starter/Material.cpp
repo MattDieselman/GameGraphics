@@ -21,6 +21,12 @@ void Material::AttatchTexture(ID3D11ShaderResourceView * tex, ID3D11SamplerState
 	sampler = sam;
 }
 
+void Material::AttatchNormalMap(ID3D11ShaderResourceView * nMap)
+{
+	textureRefCount[nMap]++;
+	normalMap = nMap;
+}
+
 Material::~Material()
 {
 	--shaderRefCount[vertexShader];
@@ -49,6 +55,11 @@ SimplePixelShader * Material::getPixelShader()
 ID3D11ShaderResourceView * Material::getTexture()
 {
 	return texture;
+}
+
+ID3D11ShaderResourceView * Material::getNormalMap()
+{
+	return normalMap;
 }
 
 ID3D11SamplerState * Material::getSampler()
