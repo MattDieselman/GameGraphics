@@ -25,6 +25,15 @@ private:
 
 	//std::vector<DirectionalLight> lights;
 
+	int shadowMapSize;
+	ID3D11DepthStencilView* shadowDSV;
+	ID3D11ShaderResourceView* shadowSRV;
+	ID3D11SamplerState* shadowSampler;
+	ID3D11RasterizerState* shadowRasterizer;
+	SimpleVertexShader* shadowVertexShader;
+	DirectX::XMFLOAT4X4 shadowViewMatrix;
+	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
+
 public:
 	RenderManager();
 	~RenderManager();
@@ -37,6 +46,8 @@ public:
 	SimplePixelShader * getPartPix();
 	ID3D11ShaderResourceView* getPartText(int index);
 
+	void InitShadows(ID3D11Device* device, ID3D11DeviceContext* context);
+	void RenderShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
 
 	void LoadShaders(ID3D11Device* device, ID3D11DeviceContext* context);
 	void DrawAll(ID3D11DeviceContext* context, float deltaTime, float totalTime, std::vector<Entity*> gameObjects,Camera * cam,std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView);

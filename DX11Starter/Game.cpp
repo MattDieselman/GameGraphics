@@ -95,6 +95,7 @@ void Game::Init()
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	//LoadShaders();
+	renderManager.InitShadows(device, context);
 	renderManager.LoadShaders(device, context);
 	materials = renderManager.getMaterials();
 
@@ -164,6 +165,7 @@ void Game::Init()
 
 	emitters.push_back(emitter);
 	emitters.push_back(emitter2);
+
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
@@ -428,6 +430,8 @@ void Game::Update(float deltaTime, float totalTime)
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
+	renderManager.RenderShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
+
 	// Background color (Cornflower Blue in this case) for clearing
 	const float color[4] = {0.4f, 0.6f, 0.75f, 0.0f};
 
@@ -445,6 +449,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	renderManager.setSceneData(cam, dirLight, pointLight, spotLight);
 
 	renderManager.DrawAll(context, deltaTime, totalTime, gameObjects, cam, emitters, backBufferRTV, depthStencilView);
+
+	// Unbind the shadow map so we don't have resource conflicts
+	// at the start of the next frame
+	gameObjects[0]->getMat()->getPixelShader()->SetShaderResourceView("ShadowMap", 0);
 
 	swapChain->Present(0, 0);
 }

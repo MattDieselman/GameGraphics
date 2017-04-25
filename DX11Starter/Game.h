@@ -13,6 +13,7 @@
 #include "RenderManager.h"
 #include "Enemy.h"
 #include "Emitter.h"
+
 class Game 
 	: public DXCore
 {
