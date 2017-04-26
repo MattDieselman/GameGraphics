@@ -12,6 +12,7 @@
 #include "Obstacle.h"
 #include "RenderManager.h"
 #include "Enemy.h"
+#include "Emitter.h"
 
 class Game 
 	: public DXCore
@@ -49,6 +50,9 @@ private:
 
 	Camera * cam;
 
+
+
+	std::vector<Emitter*>emitters;
 	RenderManager renderManager;
 
 	std::vector<Entity*> gameObjects;

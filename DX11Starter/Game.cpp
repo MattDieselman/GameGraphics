@@ -63,7 +63,10 @@ Game::~Game()
 	{
 		materials[i]->release();
 	}
-	
+	for (int i = 0; i < emitters.size(); i++) {
+		delete emitters[i];
+	}
+
 }
 
 // --------------------------------------------------------
@@ -91,6 +94,8 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	//LoadShaders();
 	renderManager.LoadShaders(device, context, width, height);
+	renderManager.InitShadows(device, context);
+
 	materials = renderManager.getMaterials();
 
 	CreateMatrices();
@@ -139,6 +144,44 @@ void Game::Init()
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
+
+	Emitter* emitter;
+	Emitter* emitter2;
+	emitter = new Emitter(
+		1000,							// Max particles
+		100,							// Particles per second
+		1,								// Particle lifetime
+		0.1f,							// Start size
+		5.0f,							// End size
+		XMFLOAT4(1, 0.1f, 0.1f, 0.2f),	// Start color
+		XMFLOAT4(1, 0.6f, 0.1f, 0),		// End color
+		XMFLOAT3(0, -1, 0),				// Start velocity
+		gameObjects[0]->getPosition(),				// Start position
+		XMFLOAT3(0, -10, 0),				// Start acceleration
+		device,
+		renderManager.getPartVert(),
+		renderManager.getPartPix(),
+		renderManager.getPartText(0));
+	emitter2 = new Emitter(
+		1000,							// Max particles
+		100,							// Particles per second
+		5,								// Particle lifetime
+		0.1f,							// Start size
+		5.0f,							// End size
+		XMFLOAT4(0.1f, 0.1f, 0.1f, .10f),	// Start color
+		XMFLOAT4(.1f, .1f, .1f, 0),		// End color
+		XMFLOAT3(0, -1, 0),				// Start velocity
+		gameObjects[0]->getPosition(),				// Start position
+		XMFLOAT3(0, -.1, 0),				// Start acceleration
+		device,
+		renderManager.getPartVert(),
+		renderManager.getPartPix(),
+		renderManager.getPartText(1));
+
+	emitters.push_back(emitter);
+	emitters.push_back(emitter2);
+
+
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
@@ -274,6 +317,12 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	cam->Update();
 	inputManager.update(deltaTime);
+	
+	for (Emitter * e : emitters)
+	{
+		e->setPosition(gameObjects[0]->getPosition());
+		e->Update(deltaTime);
+	}
 
 	/*for (Obstacle * o : objects) {
 		o->Move(-.005, XMFLOAT3(1, 0, 0));
@@ -331,7 +380,13 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Set Data that is the same for the entire scene
 	renderManager.setSceneData(cam, dirLight, pointLight, spotLight);
 
-	renderManager.DrawAll(context, deltaTime, totalTime, gameObjects, cam, backBufferRTV, depthStencilView, width, height);
+	//renderManager.RenderShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
+
+	renderManager.DrawAll(context, deltaTime, totalTime, gameObjects, cam, emitters, backBufferRTV, depthStencilView, width, height);
+
+	// Unbind the shadow map so we don't have resource conflicts
+	// at the start of the next frame
+	gameObjects[0]->getMat()->getPixelShader()->SetShaderResourceView("ShadowMap", 0);
 
 	swapChain->Present(0, 0);
 }
