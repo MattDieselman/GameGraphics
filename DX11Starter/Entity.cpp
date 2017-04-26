@@ -93,6 +93,11 @@ void Entity::setScale(XMFLOAT3 scale)
 	calculateCollider();
 }
 
+void Entity::setRotation(DirectX::XMFLOAT3 rot)
+{
+	transform.rotation = rot;
+}
+
 Mesh * Entity::getMesh()
 {
 	return mesh;

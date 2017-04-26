@@ -72,27 +72,25 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	//lights.push_back(DirectionalLight());
 	dirLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
 	dirLight.diffuseColor = XMFLOAT4(1, 0, 0, 1);
 	dirLight.direction = XMFLOAT3(-1, -1, 0);
 	
-	//lights.push_back(DirectionalLight());
 	pointLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
 	pointLight.diffuseColor = XMFLOAT4(0, 0, 1, 1);
 	pointLight.location = XMFLOAT3(0, 0, 0);
 
 	spotLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
 	spotLight.diffuseColor = XMFLOAT4(0, 1, 0, 1);
-	spotLight.location = XMFLOAT3(2, 0, 0);
-	spotLight.direction = XMFLOAT3(-1, 0, 0);
-	spotLight.angle = XM_PIDIV4;
+	spotLight.location = XMFLOAT3(0, 3.5, 0);
+	spotLight.direction = XMFLOAT3(0, -1, 0);
+	spotLight.angle = XM_PI / 8;
 
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	//LoadShaders();
-	renderManager.LoadShaders(device, context);
+	renderManager.LoadShaders(device, context, width, height);
 	materials = renderManager.getMaterials();
 
 	CreateMatrices();
@@ -112,6 +110,22 @@ void Game::Init()
 	gameObjects.push_back(new Enemy(meshes[7]->copy(), materials[2]->copy()));
 	gameObjects[3]->init(ColliderType::SPHERE, 1.f);
 	gameObjects[3]->setPosition(XMFLOAT3(10, 0, 0));
+
+	// Environment
+	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[1]->copy()));
+	gameObjects[4]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[4]->setPosition(XMFLOAT3(-10, -2.5, 2));
+	gameObjects[4]->setScale(XMFLOAT3(20, 5, 1));
+	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[1]->copy()));
+	gameObjects[5]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[5]->setPosition(XMFLOAT3(-10, 2.5, 2));
+	gameObjects[5]->setRotation(XMFLOAT3(XM_PI / 3, 0, 0));
+	gameObjects[5]->setScale(XMFLOAT3(20, 5, 1));
+	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[1]->copy()));
+	gameObjects[6]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[6]->setPosition(XMFLOAT3(-10, -5, -2.3));
+	gameObjects[6]->setRotation(XMFLOAT3(-XM_PI / 3, 0, 0));
+	gameObjects[6]->setScale(XMFLOAT3(20, 5, 1));
 
 	inputManager = InputManager(&hWnd, gameObjects[0], cam, &worldUp);
 
@@ -134,73 +148,6 @@ void Game::Init()
 // - SimpleShader provides helpful methods for sending
 //   data to individual variables on the GPU
 // --------------------------------------------------------
-void Game::LoadShaders()
-{
-	//SimpleVertexShader* vertexShader = new SimpleVertexShader(device, context);
-	//if (!vertexShader->LoadShaderFile(L"Debug/VertexShader.cso"))
-	//	vertexShader->LoadShaderFile(L"VertexShader.hlsl");	
-
-	//SimplePixelShader* pixelShader = new SimplePixelShader(device, context);
-	//if(!pixelShader->LoadShaderFile(L"Debug/PixelShader.cso"))	
-	//	pixelShader->LoadShaderFile(L"PixelShader.hlsl");
-	//
-	////Set Lighting
-
-	//pixelShader->SetData(
-	//	"light",
-	//	&lights[0],
-	//	sizeof(DirectionalLight));
-	//pixelShader->SetData(
-	//	"light2",
-	//	&lights[1],
-	//	sizeof(DirectionalLight));
-	//pixelShader->CopyAllBufferData();
-
-	//ID3D11ShaderResourceView* texture1;
-	//CreateWICTextureFromFile(device, context, L"textures/sphere.png", 0, &texture1);
-	//ID3D11ShaderResourceView* texture2;
-	//CreateWICTextureFromFile(device, context, L"textures/box.png", 0, &texture2);
-	//ID3D11ShaderResourceView* texture3;
-	//CreateWICTextureFromFile(device, context, L"textures/disc.png", 0, &texture3);
-
-	//textures.push_back(texture1);
-	//textures.push_back(texture2);
-	//textures.push_back(texture3);
-
-	//ID3D11SamplerState* sampler;
-	//D3D11_SAMPLER_DESC sampDesc = {};
-	//sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	//sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	//sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	//sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	//sampDesc.MaxAnisotropy = 16;
-	//sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-	//device->CreateSamplerState(&sampDesc, &sampler);
-
-
-	//materials.push_back(new Material(vertexShader, pixelShader));
-	//materials[0]->AttatchTexture(textures[0], sampler);
-
-	//materials.push_back(new Material(vertexShader, pixelShader));
-	//materials[1]->AttatchTexture(textures[1], sampler);
-
-	//materials.push_back(new Material(vertexShader, pixelShader));
-	//materials[2]->AttatchTexture(textures[2], sampler);
-
-	// You'll notice that the code above attempts to load each
-	// compiled shader file (.cso) from two different relative paths.
-
-	// This is because the "working directory" (where relative paths begin)
-	// will be different during the following two scenarios:
-	//  - Debugging in VS: The "Project Directory" (where your .cpp files are) 
-	//  - Run .exe directly: The "Output Directory" (where the .exe & .cso files are)
-
-	// Checking both paths is the easiest way to ensure both 
-	// scenarios work correctly, although others exist
-}
-
-
 
 // --------------------------------------------------------
 // Initializes the matrices necessary to represent our geometry's 
@@ -208,7 +155,6 @@ void Game::LoadShaders()
 // --------------------------------------------------------
 void Game::CreateMatrices()
 {
-
 	cam = new Camera(width, height);
 	worldUp = XMFLOAT3(0, 1, 0);
 	// Set up world matrix
@@ -266,10 +212,10 @@ void Game::CreateBasicGeometry()
 
 	Vertex vertices2[] =
 	{
-		{ XMFLOAT3(+2.0f, +1.0f, +0.0f) },
-		{ XMFLOAT3(+2.0f, +0.0f, +0.0f) },
-		{ XMFLOAT3(+1.0f, +0.0f, +0.0f) },
-		{ XMFLOAT3(+1.0f, +1.0f, +0.0f) },
+		{ XMFLOAT3(+1.0f, +1.0f, +0.0f), XMFLOAT2(1, 1), XMFLOAT3(0, 0, -1) },
+		{ XMFLOAT3(+1.0f, +0.0f, +0.0f), XMFLOAT2(1, 0), XMFLOAT3(0, 0, -1) },
+		{ XMFLOAT3(+0.0f, +0.0f, +0.0f), XMFLOAT2(0, 0), XMFLOAT3(0, 0, -1) },
+		{ XMFLOAT3(+0.0f, +1.0f, +0.0f), XMFLOAT2(0, 1), XMFLOAT3(0, 0, -1) },
 	};
 	unsigned int indices2[] = { 0, 1, 2 ,0,2,3};
 	meshes.push_back(new Mesh(vertices2, 4, indices2, 6, device));
@@ -382,23 +328,10 @@ void Game::Update(float deltaTime, float totalTime)
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
-	// Background color (Cornflower Blue in this case) for clearing
-	const float color[4] = {0.4f, 0.6f, 0.75f, 0.0f};
-
-	// Clear the render target and depth buffer (erases what's on the screen)
-	//  - Do this ONCE PER FRAME
-	//  - At the beginning of Draw (before drawing *anything*)
-	context->ClearRenderTargetView(backBufferRTV, color);
-	context->ClearDepthStencilView(
-		depthStencilView, 
-		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-		1.0f,
-		0);
-
 	// Set Data that is the same for the entire scene
 	renderManager.setSceneData(cam, dirLight, pointLight, spotLight);
 
-	renderManager.DrawAll(context, deltaTime, totalTime, gameObjects, cam, backBufferRTV, depthStencilView);
+	renderManager.DrawAll(context, deltaTime, totalTime, gameObjects, cam, backBufferRTV, depthStencilView, width, height);
 
 	swapChain->Present(0, 0);
 }

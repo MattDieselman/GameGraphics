@@ -32,6 +32,7 @@ Material::~Material()
 	--shaderRefCount[vertexShader];
 	--shaderRefCount[pixelShader];
 	--textureRefCount[texture];
+	--textureRefCount[normalMap];
 	--samplerRefCount[sampler];
 
 	// Delete our simple shader objects, which
@@ -39,6 +40,7 @@ Material::~Material()
 	if (shaderRefCount[vertexShader] == 0) { delete vertexShader; }
 	if (shaderRefCount[pixelShader] == 0) { delete pixelShader;	}
 	if (textureRefCount[texture] == 0) { texture->Release(); }
+	if (textureRefCount[normalMap] == 0) { normalMap->Release(); }
 	if (samplerRefCount[sampler] == 0) { sampler->Release(); };
 }
 

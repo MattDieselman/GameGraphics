@@ -33,8 +33,9 @@ public:
 	DirectX::XMFLOAT3 getRotation();
 	DirectX::XMFLOAT3 getScale() const;
 
-	void setScale(DirectX::XMFLOAT3 scale);
 	void setPosition(DirectX::XMFLOAT3 pos);
+	void setScale(DirectX::XMFLOAT3 scale);
+	void setRotation(DirectX::XMFLOAT3 rot);
 
 	Mesh* getMesh();
 	Material * getMat();
