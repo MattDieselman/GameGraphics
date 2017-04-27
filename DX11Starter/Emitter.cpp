@@ -13,6 +13,10 @@ Emitter::~Emitter()
 	delete[] localPartVerts;
 	vertBuffer->Release();
 	indexBuffer->Release();
+
+	//delete pixShader;
+	//delete vertShader;
+	texture->Release();
 }
 
 Emitter::Emitter(int maxParticles_, int particlesPerSecond_, float lifetime_, float startSize_, float endSize_, DirectX::XMFLOAT4 startColor_, DirectX::XMFLOAT4 endColor_, DirectX::XMFLOAT3 startVelocity_, DirectX::XMFLOAT3 emitterPosition_, DirectX::XMFLOAT3 emitterAcceleration_, ID3D11Device * device_, SimpleVertexShader * vertShader_, SimplePixelShader * pixShader_, ID3D11ShaderResourceView * texture_)

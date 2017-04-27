@@ -15,6 +15,20 @@ RenderManager::~RenderManager()
 	shadowRasterizer->Release();
 	shadowSampler->Release();
 	delete shadowVertexShader;
+
+	// Clean up Particles
+	delete partVertexShader;
+	delete partPixelShader;
+	particleDepthState->Release();
+	particleBlendState->Release();
+
+	// Clean up Post-processing
+	ppRTV->Release();
+	ppSRV->Release();
+	delete ppPS;
+	delete ppVS;
+
+	screen->release();
 }
 
 std::vector<Material*> RenderManager::getMaterials()
@@ -362,7 +376,7 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	materials[3]->AttatchNormalMap(normalMaps[0]);
 }
 
-void RenderManager::DrawAll(ID3D11DeviceContext * context, float deltaTime, float totalTime, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height)
+void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height)
 {
 	// Background color (Cornflower Blue in this case) for clearing
 	const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
@@ -420,6 +434,9 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, float deltaTime, floa
 
 	// Turn on VS (no other data necessary)
 	ppVS->SetShader();
+	ID3D11Buffer *verts = screen->getVertexBuffer();
+	context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
+	context->IASetIndexBuffer(screen->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
 	// Turn on PS
 	ppPS->SetShader();
@@ -431,12 +448,18 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, float deltaTime, floa
 	ppPS->CopyAllBufferData();
 
 	// Turn off vertex and index buffers
-	ID3D11Buffer* nothing = 0;
+	/*ID3D11Buffer* nothing = 0;
 	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
-	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);*/
+
+	context->RSSetState(0);
 
 	// Draw the post process (3 verts = 1 triangle to fill the screen)
-	context->Draw(3, 0);
+	//context->Draw(3, 0);
+	context->DrawIndexed(
+		screen->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+		0,     // Offset to the first index we want to use
+		0);    // Offset to add to each index when looking up vertices
 
 	// Unbind the post process SRV
 	ppPS->SetShaderResourceView("Pixels", 0);

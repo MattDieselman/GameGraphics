@@ -17,7 +17,7 @@ private:
 	std::vector<Material*> materials;
 	std::vector<ID3D11ShaderResourceView*>particleTextures;
 
-
+	// Particle requirements
 	SimpleVertexShader* partVertexShader;
 	SimplePixelShader* partPixelShader;
 	ID3D11DepthStencilState* particleDepthState;
@@ -32,6 +32,7 @@ private:
 	SimpleVertexShader* ppVS;
 	SimplePixelShader* ppPS;
 
+	// Shadow requirements
 	int shadowMapSize;
 	ID3D11DepthStencilView* shadowDSV;
 	ID3D11ShaderResourceView* shadowSRV;
@@ -47,12 +48,14 @@ public:
 
 	//void init(unsigned int width, unsigned int height);
 
+	Mesh* screen;
+
 	std::vector<Material*> getMaterials();
 	void setSceneData(Camera* cam, DirectionalLight dirLight, PointLight pointLight, SpotLight spotLight);
 	void setObjData(Entity* object);
 
 	void LoadShaders(ID3D11Device* device, ID3D11DeviceContext* context, unsigned int width, unsigned int height);
-	void DrawAll(ID3D11DeviceContext* context, float deltaTime, float totalTime, std::vector<Entity*> gameObjects,Camera * cam, std::vector<Emitter*> emitters,  ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int  width, unsigned int height);
+	void DrawAll(ID3D11DeviceContext* context, std::vector<Entity*> gameObjects,Camera * cam, std::vector<Emitter*> emitters,  ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int  width, unsigned int height);
 
 	SimpleVertexShader * getPartVert();
 	SimplePixelShader * getPartPix();
