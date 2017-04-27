@@ -102,21 +102,13 @@ void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * con
 	XMMATRIX shView = XMMatrixLookToLH(
 		XMVectorSet(spotLight->location.x, spotLight->location.y, spotLight->location.z, 0),	// Light position
 		XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0),	// Light direction
-		XMVectorSet(0, 0, 1, 0));	// Up direction
+		XMVectorSet(0, 0, 1, 0));																// Up direction
 	XMStoreFloat4x4(&shadowViewMatrix, XMMatrixTranspose(shView));
-	/* // old projection
-	XMMATRIX shProj = XMMatrixOrthographicLH(
-		10.0f,		// Width
-		10.0f,		// Height
-		0.1f,		// Near clip
-		50.0f);		// Far clip
-	XMStoreFloat4x4(&shadowProjectionMatrix, XMMatrixTranspose(shProj));
-	*/
 	XMMATRIX shProj = XMMatrixPerspectiveFovLH(
-		spotLight->angle,	// Top Down FOV Angle (radians)
-		2.1f,				// View Space Aspect Ratio
-		0.1f,				// Near clip
-		30.0f);				// Far clip
+		spotLight->angle * 2,	// Top Down FOV Angle (radians)
+		1.0f,					// View Space Aspect Ratio
+		0.1f,					// Near clip
+		30.0f);					// Far clip
 	XMStoreFloat4x4(&shadowProjectionMatrix, XMMatrixTranspose(shProj));
 
 	// Texture2D
