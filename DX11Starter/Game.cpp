@@ -94,7 +94,7 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	//LoadShaders();
 	renderManager.LoadShaders(device, context, width, height);
-	renderManager.InitShadows(device, context);
+	renderManager.InitShadows(device, context, &spotLight);
 
 	materials = renderManager.getMaterials();
 
@@ -381,7 +381,7 @@ void Game::Draw(float deltaTime, float totalTime)
 {
 	// Set Data that is the same for the entire scene
 
-	//renderManager.RenderShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
+	renderManager.RenderShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 
 	renderManager.setSceneData(cam, dirLight, pointLight, spotLight);
 

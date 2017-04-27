@@ -120,6 +120,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float shadowAmount = ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV, depthFromLight);
 
 	// Final lighting calculations
+	//return shadowAmount;
 	return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor * shadowAmount) + specular.rrrr;
 	//return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor) + specular.rrrr;
 	//return (sLightTotal * surfaceColor);

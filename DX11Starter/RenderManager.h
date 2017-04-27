@@ -61,7 +61,7 @@ public:
 	SimplePixelShader * getPartPix();
 	ID3D11ShaderResourceView* getPartText(int index);
 
-	void InitShadows(ID3D11Device* device, ID3D11DeviceContext* context);
+	void InitShadows(ID3D11Device* device, ID3D11DeviceContext* context, SpotLight* spotLight);
 	void RenderShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
 };
 

@@ -96,19 +96,27 @@ ID3D11ShaderResourceView* RenderManager::getPartText(int index)
 	return particleTextures[index];
 }
 
-void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * context)
+void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * context, SpotLight* spotLight)
 {
 	// Spot Light Matrices
 	XMMATRIX shView = XMMatrixLookToLH(
-		XMVectorSet(2, 0, 0, 0),	// Light position
-		XMVectorSet(-1, 0, 0, 0),	// Light direction
-		XMVectorSet(0, 1, 0, 0));	// Up direction
+		XMVectorSet(spotLight->location.x, spotLight->location.y, spotLight->location.z, 0),	// Light position
+		XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0),	// Light direction
+		XMVectorSet(0, 0, 1, 0));	// Up direction
 	XMStoreFloat4x4(&shadowViewMatrix, XMMatrixTranspose(shView));
+	/* // old projection
 	XMMATRIX shProj = XMMatrixOrthographicLH(
 		10.0f,		// Width
 		10.0f,		// Height
 		0.1f,		// Near clip
 		50.0f);		// Far clip
+	XMStoreFloat4x4(&shadowProjectionMatrix, XMMatrixTranspose(shProj));
+	*/
+	XMMATRIX shProj = XMMatrixPerspectiveFovLH(
+		spotLight->angle,	// Top Down FOV Angle (radians)
+		2.1f,				// View Space Aspect Ratio
+		0.1f,				// Near clip
+		30.0f);				// Far clip
 	XMStoreFloat4x4(&shadowProjectionMatrix, XMMatrixTranspose(shProj));
 
 	// Texture2D
@@ -237,6 +245,7 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	if (!partPixelShader->LoadShaderFile(L"Debug/PartPixelShader.cso"))
 		partPixelShader->LoadShaderFile(L"PartPixelShader.hlsl");
 
+	// Shadow Shader Loading
 	shadowVertexShader = new SimpleVertexShader(device, context);
 	if (!shadowVertexShader->LoadShaderFile(L"Debug/ShadowVertexShader.cso"))
 		shadowVertexShader->LoadShaderFile(L"ShadowVertexShader.hlsl");
