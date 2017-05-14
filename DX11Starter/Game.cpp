@@ -76,25 +76,32 @@ Game::~Game()
 void Game::Init()
 {
 	dirLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
-	dirLight.diffuseColor = XMFLOAT4(1, 0, 0, 1);
-	dirLight.direction = XMFLOAT3(-1, -1, 0);
+	dirLight.diffuseColor = XMFLOAT4(0.5, 0.5, 0.5, 1);
+	dirLight.direction = XMFLOAT3(0, -1, 0);
 	
 	pointLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
-	pointLight.diffuseColor = XMFLOAT4(0, 0, 1, 1);
+	pointLight.diffuseColor = XMFLOAT4(0, 0, 0, 1);
 	pointLight.location = XMFLOAT3(0, 0, 0);
 
-	spotLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
-	spotLight.diffuseColor = XMFLOAT4(1, 1, 1, 1);
-	spotLight.location = XMFLOAT3(0, 3.5, 0);
+	spotLight.ambientColor = XMFLOAT4(0.0, 0.0, 0.0, 1.0);
+	spotLight.diffuseColor = XMFLOAT4(100, 0, 0, 1);
+	spotLight.location = XMFLOAT3(0, 3, 0);
 	spotLight.direction = XMFLOAT3(0, -1, 0);
 	spotLight.angle = XM_PI / 8;
+
+	spotLight2.ambientColor = XMFLOAT4(0.0, 0.0, 0.0, 1.0);
+	spotLight2.diffuseColor = XMFLOAT4(100, 0, 0, 1);
+	spotLight2.location = XMFLOAT3(0, 3, 0);
+	spotLight2.direction = XMFLOAT3(0, 1, 0);
+	spotLight2.angle = XM_PI / 8;
 
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
 	//LoadShaders();
 	renderManager.LoadShaders(device, context, width, height);
-	renderManager.InitShadows(device, context, &spotLight);
+	renderManager.InitShadows(device, context, &spotLight, &spotLight2);
+	renderManager.DefaultLastTime();
 
 	materials = renderManager.getMaterials();
 
@@ -319,6 +326,8 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	cam->Update();
 	inputManager.update(deltaTime);
+
+	renderManager.UpdateSpotLights(deltaTime, totalTime, &spotLight, &spotLight2);
 	
 	for (Emitter * e : emitters)
 	{
@@ -381,9 +390,10 @@ void Game::Draw(float deltaTime, float totalTime)
 {
 	// Set Data that is the same for the entire scene
 
-	renderManager.RenderShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
+	renderManager.RenderSpot1ShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
+	renderManager.RenderSpot2ShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 
-	renderManager.setSceneData(cam, dirLight, pointLight, spotLight);
+	renderManager.setSceneData(cam, dirLight, pointLight, spotLight, spotLight2);
 
 	renderManager.DrawAll(context, gameObjects, cam, emitters, backBufferRTV, depthStencilView, width, height);
 

@@ -8,6 +8,7 @@
 #include "SpotLight.h"
 #include <WICTextureLoader.h>
 #include "Emitter.h"
+#include <time.h>
 
 class RenderManager{
 
@@ -33,14 +34,19 @@ private:
 	SimplePixelShader* ppPS;
 
 	// Shadow requirements
+	float lastTime;
 	int shadowMapSize;
-	ID3D11DepthStencilView* shadowDSV;
-	ID3D11ShaderResourceView* shadowSRV;
+	SimpleVertexShader* shadowVertexShader;
 	ID3D11SamplerState* shadowSampler;
 	ID3D11RasterizerState* shadowRasterizer;
-	SimpleVertexShader* shadowVertexShader;
-	DirectX::XMFLOAT4X4 shadowViewMatrix;
-	DirectX::XMFLOAT4X4 shadowProjectionMatrix;
+	ID3D11DepthStencilView* spot1ShadowDSV;
+	ID3D11ShaderResourceView* spot1ShadowSRV;
+	DirectX::XMFLOAT4X4 spot1ShadowViewMatrix;
+	DirectX::XMFLOAT4X4 spot1ShadowProjectionMatrix;
+	ID3D11DepthStencilView* spot2ShadowDSV;
+	ID3D11ShaderResourceView* spot2ShadowSRV;
+	DirectX::XMFLOAT4X4 spot2ShadowViewMatrix;
+	DirectX::XMFLOAT4X4 spot2ShadowProjectionMatrix;
 
 public:
 	RenderManager();
@@ -51,7 +57,7 @@ public:
 	Mesh* screen;
 
 	std::vector<Material*> getMaterials();
-	void setSceneData(Camera* cam, DirectionalLight dirLight, PointLight pointLight, SpotLight spotLight);
+	void setSceneData(Camera* cam, DirectionalLight dirLight, PointLight pointLight, SpotLight spotLight, SpotLight spotLight2);
 	void setObjData(Entity* object);
 
 	void LoadShaders(ID3D11Device* device, ID3D11DeviceContext* context, unsigned int width, unsigned int height);
@@ -61,7 +67,10 @@ public:
 	SimplePixelShader * getPartPix();
 	ID3D11ShaderResourceView* getPartText(int index);
 
-	void InitShadows(ID3D11Device* device, ID3D11DeviceContext* context, SpotLight* spotLight);
-	void RenderShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
+	void InitShadows(ID3D11Device* device, ID3D11DeviceContext* context, SpotLight* spotLight, SpotLight* spotLight2);
+	void RenderSpot1ShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
+	void RenderSpot2ShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
+	void RenderManager::DefaultLastTime();
+	void RenderManager::UpdateSpotLights(float deltaTime, float totalTime, SpotLight* spotLight, SpotLight* spotLight2);
 };
 

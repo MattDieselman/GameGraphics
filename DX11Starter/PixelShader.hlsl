@@ -16,7 +16,8 @@ struct VertexToPixel
 	float3 normal		: NORMAL;
 	float3 tangent		: TANGENT;
 	float2 uv			: TEXCOORD;
-	float4 posForShadow : POSITION1;
+	float4 spot1ShadowPos : POSITION1;
+	float4 spot2ShadowPos : POSITION2;
 };
 
 struct DirectionalLight
@@ -49,13 +50,15 @@ cbuffer data : register(b0)
 	PointLight pointLight;
 
 	SpotLight spotLight;
+	SpotLight spotLight2;
 
 	float3 cameraPos;
 };
 
 Texture2D diffuseTexture	: register(t0);
 Texture2D normalMap			: register(t1);
-Texture2D ShadowMap			: register(t2);
+Texture2D spot1ShadowMap	: register(t2);
+Texture2D spot2ShadowMap	: register(t3);
 SamplerState sampState		: register(s0);
 SamplerComparisonState ShadowSampler : register(s1);
 
@@ -109,19 +112,31 @@ float4 main(VertexToPixel input) : SV_TARGET
 	uint objInRange = step(angleToObj, spotLight.angle); // If angleToObj is bigger return 0, else return 1
 	float sLightAmount = saturate(dot(input.normal, dirToSL)) * objInRange;
 	float4 sLightTotal = (spotLight.diffuseColor * sLightAmount) + spotLight.ambientColor;
+	// Spot light 2 calculations
+	float3 dirToSL2 = normalize(spotLight2.location - input.worldPos);
+	float angleToObj2 = acos(dot(-dirToSL2, spotLight2.direction));
+	uint objInRange2 = step(angleToObj2, spotLight2.angle); // If angleToObj is bigger return 0, else return 1
+	float sLightAmount2 = saturate(dot(input.normal, dirToSL2)) * objInRange2;
+	float4 sLightTotal2 = (spotLight2.diffuseColor * sLightAmount2) + spotLight2.ambientColor;
 
 	// Sample the texture
 	float4 surfaceColor = diffuseTexture.Sample(sampState, input.uv);
 
 	// Shadow mapping calculations and sample
-	float depthFromLight = input.posForShadow.z / input.posForShadow.w;
-	float2 shadowUV = input.posForShadow.xy / input.posForShadow.w * 0.5f + 0.5f;
-	shadowUV.y = 1.0f - shadowUV.y;
-	float shadowAmount = ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV, depthFromLight);
+	// Spot 1
+	float depthFromLight1 = input.spot1ShadowPos.z / input.spot1ShadowPos.w;
+	float2 shadowUV1 = input.spot1ShadowPos.xy / input.spot1ShadowPos.w * 0.5f + 0.5f;
+	shadowUV1.y = 1.0f - shadowUV1.y;
+	float spot1ShadowAmount = spot1ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV1, depthFromLight1);
+	// Spot 2
+	float depthFromLight2 = input.spot2ShadowPos.z / input.spot2ShadowPos.w;
+	float2 shadowUV2 = input.spot2ShadowPos.xy / input.spot2ShadowPos.w * 0.5f + 0.5f;
+	shadowUV2.y = 1.0f - shadowUV2.y;
+	float spot2ShadowAmount = spot2ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV2, depthFromLight2);
 
 	// Final lighting calculations
 	//return shadowAmount;
-	return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor * shadowAmount) + specular.rrrr;
+	return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor * spot1ShadowAmount) + (sLightTotal2 * surfaceColor * spot2ShadowAmount) + specular.rrrr;
 	//return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor) + specular.rrrr;
 	//return (sLightTotal * surfaceColor);
 }

@@ -47,6 +47,7 @@ private:
 	DirectionalLight dirLight;
 	PointLight pointLight;
 	SpotLight spotLight;
+	SpotLight spotLight2;
 
 	Camera * cam;
 

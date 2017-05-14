@@ -1,5 +1,6 @@
 #include "RenderManager.h"
 
+
 using namespace DirectX;
 
 RenderManager::RenderManager()
@@ -10,8 +11,10 @@ RenderManager::RenderManager()
 RenderManager::~RenderManager()
 {
 	// Clean Up Shadows
-	shadowDSV->Release();
-	shadowSRV->Release();
+	spot1ShadowDSV->Release();
+	spot1ShadowSRV->Release();
+	spot2ShadowDSV->Release();
+	spot2ShadowSRV->Release();
 	shadowRasterizer->Release();
 	shadowSampler->Release();
 	delete shadowVertexShader;
@@ -36,13 +39,15 @@ std::vector<Material*> RenderManager::getMaterials()
 	return materials;
 }
 
-void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, PointLight pointLight, SpotLight spotLight)
+void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, PointLight pointLight, SpotLight spotLight, SpotLight spotLight2)
 {
 	// Data going to Vertex Shader
 	materials[0]->getVertexShader()->SetMatrix4x4("view", cam->getView());
 	materials[0]->getVertexShader()->SetMatrix4x4("projection", cam->getProj());
-	materials[0]->getVertexShader()->SetMatrix4x4("shadowView", shadowViewMatrix);
-	materials[0]->getVertexShader()->SetMatrix4x4("shadowProj", shadowProjectionMatrix);
+	materials[0]->getVertexShader()->SetMatrix4x4("spot1View", spot1ShadowViewMatrix);
+	materials[0]->getVertexShader()->SetMatrix4x4("spot1Proj", spot1ShadowProjectionMatrix);
+	materials[0]->getVertexShader()->SetMatrix4x4("spot2View", spot2ShadowViewMatrix);
+	materials[0]->getVertexShader()->SetMatrix4x4("spot2Proj", spot2ShadowProjectionMatrix);
 
 	materials[0]->getVertexShader()->CopyAllBufferData();
 
@@ -59,10 +64,15 @@ void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, PointL
 		"spotLight",
 		&spotLight,
 		sizeof(SpotLight));
+	bool checkSL2 = materials[0]->getPixelShader()->SetData(
+		"spotLight2",
+		&spotLight2,
+		sizeof(SpotLight));
 
 	materials[0]->getPixelShader()->SetFloat3("cameraPos", cam->getPosition());
 	materials[0]->getPixelShader()->SetSamplerState("ShadowSampler", shadowSampler);
-	materials[0]->getPixelShader()->SetShaderResourceView("ShadowMap", shadowSRV);
+	materials[0]->getPixelShader()->SetShaderResourceView("spot1ShadowMap", spot1ShadowSRV);
+	materials[0]->getPixelShader()->SetShaderResourceView("spot2ShadowMap", spot2ShadowSRV);
 
 	materials[0]->getPixelShader()->CopyAllBufferData();
 }
@@ -96,55 +106,141 @@ ID3D11ShaderResourceView* RenderManager::getPartText(int index)
 	return particleTextures[index];
 }
 
-void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * context, SpotLight* spotLight)
+void RenderManager::DefaultLastTime()
 {
-	// Spot Light Matrices
-	XMMATRIX shView = XMMatrixLookToLH(
+	lastTime = 0;
+}
+
+void RenderManager::UpdateSpotLights(float deltaTime, float totalTime, SpotLight* spotLight, SpotLight* spotLight2)
+{
+	// Spot Light 1
+	// Translation
+	if ((*spotLight).location.x < -10) { (*spotLight).location.x = 10; }
+	(*spotLight).location.x -= 3 * deltaTime;
+	// Rotation
+	if (totalTime > lastTime + 0.01)
+	{
+		XMVECTOR spotDir = XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0);
+		spotDir = XMVector3Rotate(spotDir, XMQuaternionRotationAxis(XMVectorSet(0, 0, 1, 0), XM_PI / 36));
+		XMStoreFloat3(&(*spotLight).direction, spotDir);
+		XMMATRIX shView = XMMatrixLookToLH(
+			XMVectorSet(spotLight->location.x, spotLight->location.y, spotLight->location.z, 0),	// Light position
+			spotDir,																				// Light direction
+			XMVectorSet(0, 0, 1, 0));																// Up direction
+		XMStoreFloat4x4(&spot1ShadowViewMatrix, XMMatrixTranspose(shView));
+	}
+	
+	// Spot Light 2
+	// Translation
+	if ((*spotLight2).location.x < -10) { (*spotLight2).location.x = 10; }
+	(*spotLight2).location.x -= 3 * deltaTime;
+	// Rotation
+	if (totalTime > lastTime + 0.01)
+	{
+		XMVECTOR spotDir = XMVectorSet(spotLight2->direction.x, spotLight2->direction.y, spotLight2->direction.z, 0);
+		spotDir = XMVector3Rotate(spotDir, XMQuaternionRotationAxis(XMVectorSet(0, 0, 1, 0), XM_PI / 36));
+		XMStoreFloat3(&(*spotLight2).direction, spotDir);
+		XMMATRIX shView = XMMatrixLookToLH(
+			XMVectorSet(spotLight2->location.x, spotLight2->location.y, spotLight2->location.z, 0),	// Light position
+			spotDir,																				// Light direction
+			XMVectorSet(0, 0, 1, 0));																// Up direction
+		XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView));
+	}
+
+	lastTime = totalTime;
+}
+
+void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * context, SpotLight* spotLight, SpotLight* spotLight2)
+{
+	shadowMapSize = 1024;
+	// Spot Light 1 ------------------------------------------------------------------------------------------------
+	// Matrices
+	XMMATRIX spot1shView = XMMatrixLookToLH(
 		XMVectorSet(spotLight->location.x, spotLight->location.y, spotLight->location.z, 0),	// Light position
 		XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0),	// Light direction
 		XMVectorSet(0, 0, 1, 0));																// Up direction
-	XMStoreFloat4x4(&shadowViewMatrix, XMMatrixTranspose(shView));
-	XMMATRIX shProj = XMMatrixPerspectiveFovLH(
+	XMStoreFloat4x4(&spot1ShadowViewMatrix, XMMatrixTranspose(spot1shView));
+	XMMATRIX spot1shProj = XMMatrixPerspectiveFovLH(
 		spotLight->angle * 2,	// Top Down FOV Angle (radians)
 		1.0f,					// View Space Aspect Ratio
 		0.1f,					// Near clip
-		30.0f);					// Far clip
-	XMStoreFloat4x4(&shadowProjectionMatrix, XMMatrixTranspose(shProj));
-
+		15.0f);					// Far clip
+	XMStoreFloat4x4(&spot1ShadowProjectionMatrix, XMMatrixTranspose(spot1shProj));
 	// Texture2D
-	shadowMapSize = 1024;
-	D3D11_TEXTURE2D_DESC shadowDesc = {};
-	shadowDesc.Width = shadowMapSize;
-	shadowDesc.Height = shadowMapSize;
-	shadowDesc.ArraySize = 1;
-	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-	shadowDesc.CPUAccessFlags = 0;
-	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-	shadowDesc.MipLevels = 1;
-	shadowDesc.MiscFlags = 0;
-	shadowDesc.SampleDesc.Count = 1;
-	shadowDesc.SampleDesc.Quality = 0;
-	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
-	ID3D11Texture2D* shadowTexture;
-	device->CreateTexture2D(&shadowDesc, 0, &shadowTexture);
-
+	D3D11_TEXTURE2D_DESC spot1ShadowDesc = {};
+	spot1ShadowDesc.Width = shadowMapSize;
+	spot1ShadowDesc.Height = shadowMapSize;
+	spot1ShadowDesc.ArraySize = 1;
+	spot1ShadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	spot1ShadowDesc.CPUAccessFlags = 0;
+	spot1ShadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	spot1ShadowDesc.MipLevels = 1;
+	spot1ShadowDesc.MiscFlags = 0;
+	spot1ShadowDesc.SampleDesc.Count = 1;
+	spot1ShadowDesc.SampleDesc.Quality = 0;
+	spot1ShadowDesc.Usage = D3D11_USAGE_DEFAULT;
+	ID3D11Texture2D* spot1ShadowTexture;
+	device->CreateTexture2D(&spot1ShadowDesc, 0, &spot1ShadowTexture);
 	// DSV
-	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
-	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	shadowDSDesc.Texture2D.MipSlice = 0;
-	device->CreateDepthStencilView(shadowTexture, &shadowDSDesc, &shadowDSV);
-
+	D3D11_DEPTH_STENCIL_VIEW_DESC spot1ShadowDSDesc = {};
+	spot1ShadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	spot1ShadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	spot1ShadowDSDesc.Texture2D.MipSlice = 0;
+	device->CreateDepthStencilView(spot1ShadowTexture, &spot1ShadowDSDesc, &spot1ShadowDSV);
 	// SRV
-	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 1;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	device->CreateShaderResourceView(shadowTexture, &srvDesc, &shadowSRV);
-
+	D3D11_SHADER_RESOURCE_VIEW_DESC spot1ShadowSRVDesc = {};
+	spot1ShadowSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	spot1ShadowSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	spot1ShadowSRVDesc.Texture2D.MipLevels = 1;
+	spot1ShadowSRVDesc.Texture2D.MostDetailedMip = 0;
+	device->CreateShaderResourceView(spot1ShadowTexture, &spot1ShadowSRVDesc, &spot1ShadowSRV);
 	// Release the texture reference since we don't need it
-	shadowTexture->Release();
+	spot1ShadowTexture->Release();
+	// Spot Light 1 ------------------------------------------------------------------------------------------------
+	// Spot Light 2 ------------------------------------------------------------------------------------------------
+	// Matrices
+	XMMATRIX shView2 = XMMatrixLookToLH(
+		XMVectorSet(spotLight2->location.x, spotLight2->location.y, spotLight2->location.z, 0),	// Light position
+		XMVectorSet(spotLight2->direction.x, spotLight2->direction.y, spotLight2->direction.z, 0),	// Light direction
+		XMVectorSet(0, 0, 1, 0));																// Up direction
+	XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView2));
+	XMMATRIX shProj2 = XMMatrixPerspectiveFovLH(
+		spotLight2->angle * 2,	// Top Down FOV Angle (radians)
+		1.0f,					// View Space Aspect Ratio
+		0.1f,					// Near clip
+		15.0f);					// Far clip
+	XMStoreFloat4x4(&spot2ShadowProjectionMatrix, XMMatrixTranspose(shProj2));
+	// Texture2D
+	D3D11_TEXTURE2D_DESC spot2ShadowDesc = {};
+	spot2ShadowDesc.Width = shadowMapSize;
+	spot2ShadowDesc.Height = shadowMapSize;
+	spot2ShadowDesc.ArraySize = 1;
+	spot2ShadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	spot2ShadowDesc.CPUAccessFlags = 0;
+	spot2ShadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	spot2ShadowDesc.MipLevels = 1;
+	spot2ShadowDesc.MiscFlags = 0;
+	spot2ShadowDesc.SampleDesc.Count = 1;
+	spot2ShadowDesc.SampleDesc.Quality = 0;
+	spot2ShadowDesc.Usage = D3D11_USAGE_DEFAULT;
+	ID3D11Texture2D* spot2ShadowTexture;
+	device->CreateTexture2D(&spot2ShadowDesc, 0, &spot2ShadowTexture);
+	// DSV
+	D3D11_DEPTH_STENCIL_VIEW_DESC spot2ShadowDSDesc = {};
+	spot2ShadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	spot2ShadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	spot2ShadowDSDesc.Texture2D.MipSlice = 0;
+	device->CreateDepthStencilView(spot2ShadowTexture, &spot2ShadowDSDesc, &spot2ShadowDSV);
+	// SRV
+	D3D11_SHADER_RESOURCE_VIEW_DESC spot2ShadowSRVDesc = {};
+	spot2ShadowSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	spot2ShadowSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	spot2ShadowSRVDesc.Texture2D.MipLevels = 1;
+	spot2ShadowSRVDesc.Texture2D.MostDetailedMip = 0;
+	device->CreateShaderResourceView(spot2ShadowTexture, &spot2ShadowSRVDesc, &spot2ShadowSRV);
+	// Release the texture reference since we don't need it
+	spot2ShadowTexture->Release();
+	// Spot Light 1 ------------------------------------------------------------------------------------------------
 
 	// special "comparison" sampler state for shadows
 	D3D11_SAMPLER_DESC shadowSampDesc = {};
@@ -170,12 +266,12 @@ void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * con
 	device->CreateRasterizerState(&shadowRastDesc, &shadowRasterizer);
 }
 
-void RenderManager::RenderShadowMap(ID3D11DeviceContext * context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView * backBufferRTV, ID3D11DepthStencilView * depthStencilView, unsigned int * width, unsigned int * height)
+void RenderManager::RenderSpot1ShadowMap(ID3D11DeviceContext * context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView * backBufferRTV, ID3D11DepthStencilView * depthStencilView, unsigned int * width, unsigned int * height)
 {
 	// Set up the render targets and depth buffer (shadow map) and
 	// other pipeline states
-	context->OMSetRenderTargets(0, 0, shadowDSV);
-	context->ClearDepthStencilView(shadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	context->OMSetRenderTargets(0, 0, spot1ShadowDSV);
+	context->ClearDepthStencilView(spot1ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	context->RSSetState(shadowRasterizer);
 
 	D3D11_VIEWPORT vp = {};
@@ -189,8 +285,8 @@ void RenderManager::RenderShadowMap(ID3D11DeviceContext * context, std::vector<E
 
 	// Set up the vertex shader for shadow rendering
 	shadowVertexShader->SetShader();
-	shadowVertexShader->SetMatrix4x4("view", shadowViewMatrix);
-	shadowVertexShader->SetMatrix4x4("projection", shadowProjectionMatrix);
+	shadowVertexShader->SetMatrix4x4("view", spot1ShadowViewMatrix);
+	shadowVertexShader->SetMatrix4x4("projection", spot1ShadowProjectionMatrix);
 
 	// Turn off the pixel shader
 	context->PSSetShader(0, 0, 0);
@@ -210,6 +306,58 @@ void RenderManager::RenderShadowMap(ID3D11DeviceContext * context, std::vector<E
 		shadowVertexShader->SetMatrix4x4("world", object->getWorld());
 		shadowVertexShader->CopyAllBufferData();
 		
+		// Draw into shadow map
+		context->DrawIndexed(object->getMesh()->getIndexCount(), 0, 0);
+	}
+
+	// Revert all the DX settings for "regular" drawing
+	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
+	vp.Width = (float)*width;
+	vp.Height = (float)*height;
+	context->RSSetViewports(1, &vp);
+	context->RSSetState(0); // Restores default state
+}
+
+void RenderManager::RenderSpot2ShadowMap(ID3D11DeviceContext * context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView * backBufferRTV, ID3D11DepthStencilView * depthStencilView, unsigned int * width, unsigned int * height)
+{
+	// Set up the render targets and depth buffer (shadow map) and
+	// other pipeline states
+	context->OMSetRenderTargets(0, 0, spot2ShadowDSV);
+	context->ClearDepthStencilView(spot2ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	context->RSSetState(shadowRasterizer);
+
+	D3D11_VIEWPORT vp = {};
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+	vp.Width = (float)shadowMapSize;
+	vp.Height = (float)shadowMapSize;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	context->RSSetViewports(1, &vp);
+
+	// Set up the vertex shader for shadow rendering
+	shadowVertexShader->SetShader();
+	shadowVertexShader->SetMatrix4x4("view", spot2ShadowViewMatrix);
+	shadowVertexShader->SetMatrix4x4("projection", spot2ShadowProjectionMatrix);
+
+	// Turn off the pixel shader
+	context->PSSetShader(0, 0, 0);
+
+	// Render all of our entities to the shadow map
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	for each (Entity* object in *gameObjects)
+	{
+		// Set buffers in the input assembler
+		ID3D11Buffer* vb = object->getMesh()->getVertexBuffer();
+		ID3D11Buffer* ib = object->getMesh()->getIndexBuffer();
+		context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+		context->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
+
+		shadowVertexShader->SetMatrix4x4("world", object->getWorld());
+		shadowVertexShader->CopyAllBufferData();
+
 		// Draw into shadow map
 		context->DrawIndexed(object->getMesh()->getIndexCount(), 0, 0);
 	}
