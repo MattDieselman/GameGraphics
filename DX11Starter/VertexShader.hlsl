@@ -15,6 +15,8 @@ cbuffer externalData : register(b0)
 	matrix spot1Proj;
 	matrix spot2View;
 	matrix spot2Proj;
+	matrix dirView;
+	matrix dirProj;
 };
 
 // Struct representing a single vertex worth of data
@@ -54,6 +56,7 @@ struct VertexToPixel
 	float2 uv			: TEXCOORD;
 	float4 spot1ShadowPos : POSITION1;
 	float4 spot2ShadowPos : POSITION2;
+	float4 dirShadowPos	: POSITION3;
 };
 
 // --------------------------------------------------------
@@ -91,6 +94,8 @@ VertexToPixel main( VertexShaderInput input )
 	output.spot1ShadowPos = mul(float4(input.position, 1.0f), spot1ShadowWVP);
 	matrix spot2ShadowWVP = mul(mul(world, spot2View), spot2Proj);
 	output.spot2ShadowPos = mul(float4(input.position, 1.0f), spot2ShadowWVP);
+	matrix dirShadowWVP = mul(mul(world, dirView), dirProj);
+	output.dirShadowPos = mul(float4(input.position, 1.0f), dirShadowWVP);
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer

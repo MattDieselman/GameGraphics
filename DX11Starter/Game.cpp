@@ -100,7 +100,7 @@ void Game::Init()
 	//  - You'll be expanding and/or replacing these later
 	//LoadShaders();
 	renderManager.LoadShaders(device, context, width, height);
-	renderManager.InitShadows(device, context, &spotLight, &spotLight2);
+	renderManager.InitShadows(device, context, &spotLight, &spotLight2, &dirLight);
 	renderManager.DefaultLastTime();
 
 	materials = renderManager.getMaterials();
@@ -392,6 +392,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	renderManager.RenderSpot1ShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 	renderManager.RenderSpot2ShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
+	renderManager.RenderDirShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 
 	renderManager.setSceneData(cam, dirLight, pointLight, spotLight, spotLight2);
 

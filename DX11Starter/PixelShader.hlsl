@@ -18,6 +18,7 @@ struct VertexToPixel
 	float2 uv			: TEXCOORD;
 	float4 spot1ShadowPos : POSITION1;
 	float4 spot2ShadowPos : POSITION2;
+	float4 dirShadowPos	: POSITION3;
 };
 
 struct DirectionalLight
@@ -59,6 +60,7 @@ Texture2D diffuseTexture	: register(t0);
 Texture2D normalMap			: register(t1);
 Texture2D spot1ShadowMap	: register(t2);
 Texture2D spot2ShadowMap	: register(t3);
+Texture2D dirShadowMap		: register(t4);
 SamplerState sampState		: register(s0);
 SamplerComparisonState ShadowSampler : register(s1);
 
@@ -133,10 +135,15 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float2 shadowUV2 = input.spot2ShadowPos.xy / input.spot2ShadowPos.w * 0.5f + 0.5f;
 	shadowUV2.y = 1.0f - shadowUV2.y;
 	float spot2ShadowAmount = spot2ShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV2, depthFromLight2);
+	// Dir
+	float depthFromLight3 = input.dirShadowPos.z / input.dirShadowPos.w;
+	float2 shadowUV3 = input.dirShadowPos.xy / input.dirShadowPos.w * 0.5f + 0.5f;
+	shadowUV3.y = 1.0f - shadowUV3.y;
+	float dirShadowAmount = dirShadowMap.SampleCmpLevelZero(ShadowSampler, shadowUV3, depthFromLight3);
 
 	// Final lighting calculations
 	//return shadowAmount;
-	return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor * spot1ShadowAmount) + (sLightTotal2 * surfaceColor * spot2ShadowAmount) + specular.rrrr;
+	return (dLightTotal * surfaceColor * dirShadowAmount) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor * spot1ShadowAmount) + (sLightTotal2 * surfaceColor * spot2ShadowAmount) + specular.rrrr;
 	//return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor) + specular.rrrr;
 	//return (sLightTotal * surfaceColor);
 }

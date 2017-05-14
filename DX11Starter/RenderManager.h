@@ -47,6 +47,10 @@ private:
 	ID3D11ShaderResourceView* spot2ShadowSRV;
 	DirectX::XMFLOAT4X4 spot2ShadowViewMatrix;
 	DirectX::XMFLOAT4X4 spot2ShadowProjectionMatrix;
+	ID3D11DepthStencilView* dirShadowDSV;
+	ID3D11ShaderResourceView* dirShadowSRV;
+	DirectX::XMFLOAT4X4 dirShadowViewMatrix;
+	DirectX::XMFLOAT4X4 dirShadowProjectionMatrix;
 
 public:
 	RenderManager();
@@ -67,9 +71,10 @@ public:
 	SimplePixelShader * getPartPix();
 	ID3D11ShaderResourceView* getPartText(int index);
 
-	void InitShadows(ID3D11Device* device, ID3D11DeviceContext* context, SpotLight* spotLight, SpotLight* spotLight2);
+	void InitShadows(ID3D11Device* device, ID3D11DeviceContext* context, SpotLight* spotLight, SpotLight* spotLight2, DirectionalLight* dirLight);
 	void RenderSpot1ShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
 	void RenderSpot2ShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
+	void RenderDirShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
 	void RenderManager::DefaultLastTime();
 	void RenderManager::UpdateSpotLights(float deltaTime, float totalTime, SpotLight* spotLight, SpotLight* spotLight2);
 };

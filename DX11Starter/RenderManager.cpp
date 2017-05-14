@@ -15,6 +15,8 @@ RenderManager::~RenderManager()
 	spot1ShadowSRV->Release();
 	spot2ShadowDSV->Release();
 	spot2ShadowSRV->Release();
+	dirShadowDSV->Release();
+	dirShadowSRV->Release();
 	shadowRasterizer->Release();
 	shadowSampler->Release();
 	delete shadowVertexShader;
@@ -48,6 +50,8 @@ void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, PointL
 	materials[0]->getVertexShader()->SetMatrix4x4("spot1Proj", spot1ShadowProjectionMatrix);
 	materials[0]->getVertexShader()->SetMatrix4x4("spot2View", spot2ShadowViewMatrix);
 	materials[0]->getVertexShader()->SetMatrix4x4("spot2Proj", spot2ShadowProjectionMatrix);
+	materials[0]->getVertexShader()->SetMatrix4x4("dirView", dirShadowViewMatrix);
+	materials[0]->getVertexShader()->SetMatrix4x4("dirProj", dirShadowProjectionMatrix);
 
 	materials[0]->getVertexShader()->CopyAllBufferData();
 
@@ -73,6 +77,7 @@ void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, PointL
 	materials[0]->getPixelShader()->SetSamplerState("ShadowSampler", shadowSampler);
 	materials[0]->getPixelShader()->SetShaderResourceView("spot1ShadowMap", spot1ShadowSRV);
 	materials[0]->getPixelShader()->SetShaderResourceView("spot2ShadowMap", spot2ShadowSRV);
+	materials[0]->getPixelShader()->SetShaderResourceView("dirShadowMap", dirShadowSRV);
 
 	materials[0]->getPixelShader()->CopyAllBufferData();
 }
@@ -150,7 +155,7 @@ void RenderManager::UpdateSpotLights(float deltaTime, float totalTime, SpotLight
 	lastTime = totalTime;
 }
 
-void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * context, SpotLight* spotLight, SpotLight* spotLight2)
+void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * context, SpotLight* spotLight, SpotLight* spotLight2, DirectionalLight* dirLight)
 {
 	shadowMapSize = 1024;
 	// Spot Light 1 ------------------------------------------------------------------------------------------------
@@ -241,6 +246,50 @@ void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * con
 	// Release the texture reference since we don't need it
 	spot2ShadowTexture->Release();
 	// Spot Light 1 ------------------------------------------------------------------------------------------------
+	// Dir Light ---------------------------------------------------------------------------------------------------
+	// Matrices
+	XMMATRIX shView3 = XMMatrixLookToLH(
+		XMVectorSet(0, 3.5, 0, 0),																// Light position
+		XMVectorSet(dirLight->direction.x, dirLight->direction.y, dirLight->direction.z, 0),	// Light direction
+		XMVectorSet(0, 0, 1, 0));																// Up direction
+	XMStoreFloat4x4(&dirShadowViewMatrix, XMMatrixTranspose(shView3));
+	XMMATRIX shProj3 = XMMatrixOrthographicLH(
+		20.0f,					// View Width
+		20.0f,					// View Height
+		0.1f,					// Near clip
+		15.0f);					// Far clip
+	XMStoreFloat4x4(&dirShadowProjectionMatrix, XMMatrixTranspose(shProj3));
+	// Texture2D
+	D3D11_TEXTURE2D_DESC dirShadowDesc = {};
+	dirShadowDesc.Width = shadowMapSize;
+	dirShadowDesc.Height = shadowMapSize;
+	dirShadowDesc.ArraySize = 1;
+	dirShadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	dirShadowDesc.CPUAccessFlags = 0;
+	dirShadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	dirShadowDesc.MipLevels = 1;
+	dirShadowDesc.MiscFlags = 0;
+	dirShadowDesc.SampleDesc.Count = 1;
+	dirShadowDesc.SampleDesc.Quality = 0;
+	dirShadowDesc.Usage = D3D11_USAGE_DEFAULT;
+	ID3D11Texture2D* dirShadowTexture;
+	device->CreateTexture2D(&dirShadowDesc, 0, &dirShadowTexture);
+	// DSV
+	D3D11_DEPTH_STENCIL_VIEW_DESC dirShadowDSDesc = {};
+	dirShadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	dirShadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	dirShadowDSDesc.Texture2D.MipSlice = 0;
+	device->CreateDepthStencilView(dirShadowTexture, &dirShadowDSDesc, &dirShadowDSV);
+	// SRV
+	D3D11_SHADER_RESOURCE_VIEW_DESC dirShadowSRVDesc = {};
+	dirShadowSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	dirShadowSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	dirShadowSRVDesc.Texture2D.MipLevels = 1;
+	dirShadowSRVDesc.Texture2D.MostDetailedMip = 0;
+	device->CreateShaderResourceView(dirShadowTexture, &dirShadowSRVDesc, &dirShadowSRV);
+	// Release the texture reference since we don't need it
+	dirShadowTexture->Release();
+	// Dir Light ---------------------------------------------------------------------------------------------------
 
 	// special "comparison" sampler state for shadows
 	D3D11_SAMPLER_DESC shadowSampDesc = {};
@@ -339,6 +388,58 @@ void RenderManager::RenderSpot2ShadowMap(ID3D11DeviceContext * context, std::vec
 	shadowVertexShader->SetShader();
 	shadowVertexShader->SetMatrix4x4("view", spot2ShadowViewMatrix);
 	shadowVertexShader->SetMatrix4x4("projection", spot2ShadowProjectionMatrix);
+
+	// Turn off the pixel shader
+	context->PSSetShader(0, 0, 0);
+
+	// Render all of our entities to the shadow map
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	for each (Entity* object in *gameObjects)
+	{
+		// Set buffers in the input assembler
+		ID3D11Buffer* vb = object->getMesh()->getVertexBuffer();
+		ID3D11Buffer* ib = object->getMesh()->getIndexBuffer();
+		context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+		context->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
+
+		shadowVertexShader->SetMatrix4x4("world", object->getWorld());
+		shadowVertexShader->CopyAllBufferData();
+
+		// Draw into shadow map
+		context->DrawIndexed(object->getMesh()->getIndexCount(), 0, 0);
+	}
+
+	// Revert all the DX settings for "regular" drawing
+	context->OMSetRenderTargets(1, &backBufferRTV, depthStencilView);
+	vp.Width = (float)*width;
+	vp.Height = (float)*height;
+	context->RSSetViewports(1, &vp);
+	context->RSSetState(0); // Restores default state
+}
+
+void RenderManager::RenderDirShadowMap(ID3D11DeviceContext * context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView * backBufferRTV, ID3D11DepthStencilView * depthStencilView, unsigned int * width, unsigned int * height)
+{
+	// Set up the render targets and depth buffer (shadow map) and
+	// other pipeline states
+	context->OMSetRenderTargets(0, 0, dirShadowDSV);
+	context->ClearDepthStencilView(dirShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	context->RSSetState(shadowRasterizer);
+
+	D3D11_VIEWPORT vp = {};
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+	vp.Width = (float)shadowMapSize;
+	vp.Height = (float)shadowMapSize;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	context->RSSetViewports(1, &vp);
+
+	// Set up the vertex shader for shadow rendering
+	shadowVertexShader->SetShader();
+	shadowVertexShader->SetMatrix4x4("view", dirShadowViewMatrix);
+	shadowVertexShader->SetMatrix4x4("projection", dirShadowProjectionMatrix);
 
 	// Turn off the pixel shader
 	context->PSSetShader(0, 0, 0);
