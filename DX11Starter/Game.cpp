@@ -75,24 +75,24 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	dirLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
-	dirLight.diffuseColor = XMFLOAT4(0.5, 0.5, 0.5, 1);
-	dirLight.direction = XMFLOAT3(0, -1, 0);
+	dirLight.ambientColor = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.f);
+	dirLight.diffuseColor = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.f);
+	dirLight.direction = XMFLOAT3(0.f, -1.f, 0.f);
 	
-	pointLight.ambientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
-	pointLight.diffuseColor = XMFLOAT4(0, 0, 0, 1);
-	pointLight.location = XMFLOAT3(0, 0, 0);
+	pointLight.ambientColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
+	pointLight.diffuseColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
+	pointLight.location = XMFLOAT3(0.f, 0.f, 0.f);
 
-	spotLight.ambientColor = XMFLOAT4(0.0, 0.0, 0.0, 1.0);
-	spotLight.diffuseColor = XMFLOAT4(100, 0, 0, 1);
-	spotLight.location = XMFLOAT3(0, 3, 0);
-	spotLight.direction = XMFLOAT3(0, -1, 0);
+	spotLight.ambientColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
+	spotLight.diffuseColor = XMFLOAT4(100.f, 0.f, 0.f, 1.f);
+	spotLight.location = XMFLOAT3(10.f, 3.f, 0.f);
+	spotLight.direction = XMFLOAT3(0.f, -1.f, 0.f);
 	spotLight.angle = XM_PI / 8;
 
-	spotLight2.ambientColor = XMFLOAT4(0.0, 0.0, 0.0, 1.0);
-	spotLight2.diffuseColor = XMFLOAT4(100, 0, 0, 1);
-	spotLight2.location = XMFLOAT3(0, 3, 0);
-	spotLight2.direction = XMFLOAT3(0, 1, 0);
+	spotLight2.ambientColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
+	spotLight2.diffuseColor = XMFLOAT4(100.f, 0.f, 0.f, 1.f);
+	spotLight2.location = XMFLOAT3(10.f, 3.f, 0.f);
+	spotLight2.direction = XMFLOAT3(0.f, -1.f, 0.f);
 	spotLight2.angle = XM_PI / 8;
 
 	// Helper methods for loading shaders, creating some basic
