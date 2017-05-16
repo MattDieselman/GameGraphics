@@ -386,6 +386,9 @@ void Game::Update(float deltaTime, float totalTime)
 	gameObjects[4]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
 	gameObjects[5]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
 	gameObjects[6]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[7]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[8]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[9]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
 	if (gameObjects[4]->getPosition().x < -30.0f)
 	{
 		gameObjects[4]->setPosition(XMFLOAT3(gameObjects[7]->getPosition().x + 40.f, gameObjects[4]->getPosition().y, gameObjects[4]->getPosition().z));
@@ -393,9 +396,6 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[6]->setPosition(XMFLOAT3(gameObjects[9]->getPosition().x + 40.f, gameObjects[6]->getPosition().y, gameObjects[6]->getPosition().z));
 		renderManager.loopSpotLights(&spotLight, &spotLight2, gameObjects[7]->getPosition().x);
 	}
-	gameObjects[7]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[8]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[9]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
 	if (gameObjects[7]->getPosition().x < -30.0f)
 	{
 		gameObjects[7]->setPosition(XMFLOAT3(gameObjects[4]->getPosition().x + 40.f, gameObjects[7]->getPosition().y, gameObjects[7]->getPosition().z));
