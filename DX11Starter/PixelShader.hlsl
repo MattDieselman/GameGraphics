@@ -143,7 +143,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Final lighting calculations
 	//return shadowAmount;
-	return (dLightTotal * surfaceColor * dirShadowAmount) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor * spot1ShadowAmount) + (sLightTotal2 * surfaceColor * spot2ShadowAmount) + specular.rrrr;
+	return (dLightTotal * surfaceColor * dirShadowAmount) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor * spot1ShadowAmount) + (sLightTotal2 * surfaceColor * spot2ShadowAmount);// +specular.rrrr;
 	//return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor) + specular.rrrr;
 	//return (sLightTotal * surfaceColor);
 }
