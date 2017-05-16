@@ -86,14 +86,14 @@ void Game::Init()
 
 	spotLight.ambientColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
 	spotLight.diffuseColor = XMFLOAT4(.4f, 1.f, 1.f, 1.f);
-	spotLight.location = XMFLOAT3(0.f, 2.2f, 1.9f);
+	spotLight.location = XMFLOAT3(22.5f, 2.2f, 1.9f);
 	spotLight.direction = XMFLOAT3(0.f, -1.f, 0.f);
 	spotLight.angle = XM_PI / 8;
 
 	spotLight2.ambientColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
-	spotLight2.diffuseColor = XMFLOAT4(1.f, 0.f, 0.f, 1.f);
-	spotLight2.location = XMFLOAT3(0.f, 2.f, 1.9f);
-	spotLight2.direction = XMFLOAT3(0.f, 1.f, 0.f);
+	spotLight2.diffuseColor = XMFLOAT4(.4f, 1.f, 1.f, 1.f);
+	spotLight2.location = XMFLOAT3(32.4f, 2.2f, 1.9f);
+	spotLight2.direction = XMFLOAT3(0.f, -1.f, 0.f);
 	spotLight2.angle = XM_PI / 8;
 
 	renderManager.rotateSpotLights(1, 0, 0, XM_PI / 30, &spotLight, &spotLight2);
@@ -129,26 +129,51 @@ void Game::Init()
 	gameObjects[3]->setPosition(XMFLOAT3(10, 0, 0));
 
 	// Environment
+	// Wall
 	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[5]->copy()));
 	gameObjects[4]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[4]->setPosition(XMFLOAT3(-11.8, 0.5, 2));
+	gameObjects[4]->setPosition(XMFLOAT3(14, 0.5, 2));
 	gameObjects[4]->setScale(XMFLOAT3(20, 4, 1));
+	// Ceiling
 	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[4]->copy()));
 	gameObjects[5]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[5]->setPosition(XMFLOAT3(0, 4.5, 2));
+	gameObjects[5]->setPosition(XMFLOAT3(14, 4.5, 2));
 	gameObjects[5]->setRotation(XMFLOAT3(XM_PI / 2, 0, 0));
-	gameObjects[5]->setScale(XMFLOAT3(10, 5, 1));
+	gameObjects[5]->setScale(XMFLOAT3(20, 5, 1));
+	// Floor
 	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[6]->copy()));
 	gameObjects[6]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[6]->setPosition(XMFLOAT3(0, -3.5, 2));
+	gameObjects[6]->setPosition(XMFLOAT3(14, -3.5, 2));
 	gameObjects[6]->setRotation(XMFLOAT3(-XM_PI / 2, 0, 0));
-	gameObjects[6]->setScale(XMFLOAT3(10, 5, 1));
+	gameObjects[6]->setScale(XMFLOAT3(20, 5, 1));
+	// Wall2
+	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[5]->copy()));
+	gameObjects[7]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[7]->setPosition(XMFLOAT3(54, 0.5, 2));
+	gameObjects[7]->setScale(XMFLOAT3(20, 4, 1));
+	// Ceiling2
+	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[4]->copy()));
+	gameObjects[8]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[8]->setPosition(XMFLOAT3(54, 4.5, 2));
+	gameObjects[8]->setRotation(XMFLOAT3(XM_PI / 2, 0, 0));
+	gameObjects[8]->setScale(XMFLOAT3(20, 5, 1));
+	// Floor2
+	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[6]->copy()));
+	gameObjects[9]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[9]->setPosition(XMFLOAT3(54, -3.5, 2));
+	gameObjects[9]->setRotation(XMFLOAT3(-XM_PI / 2, 0, 0));
+	gameObjects[9]->setScale(XMFLOAT3(20, 5, 1));
+	// Background
+	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[9]->copy()));
+	gameObjects[10]->init(ColliderType::AABB, 1.f);
+	gameObjects[10]->setPosition(XMFLOAT3(0.f, 3.f, 2.1f));
+	gameObjects[10]->setScale(XMFLOAT3(8.9f, 7.f, 1.f));
 
 	// Coin
 	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
-	gameObjects[7]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[7]->setPosition(XMFLOAT3(0, 0, 0));
-	gameObjects[7]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects[11]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[11]->setPosition(XMFLOAT3(0, 0, 0));
+	gameObjects[11]->setScale(XMFLOAT3(3, 3, 3));
 
 	inputManager = InputManager(&hWnd, gameObjects[0], cam, &worldUp);
 
@@ -336,8 +361,6 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	cam->Update();
 	inputManager.update(deltaTime);
-
-	//renderManager.UpdateSpotLights(deltaTime, totalTime, &spotLight, &spotLight2);
 	
 	for (Emitter * e : emitters)
 	{
@@ -357,6 +380,30 @@ void Game::Update(float deltaTime, float totalTime)
 	{
 		gameObjects[1]->setPosition(XMFLOAT3(10, -2, 0));
 	}*/
+
+	// Move Environment
+	renderManager.moveSpotLights(deltaTime, &spotLight, &spotLight2);
+	gameObjects[4]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[5]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[6]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	if (gameObjects[4]->getPosition().x < -30.0f)
+	{
+		gameObjects[4]->setPosition(XMFLOAT3(gameObjects[7]->getPosition().x + 40.f, gameObjects[4]->getPosition().y, gameObjects[4]->getPosition().z));
+		gameObjects[5]->setPosition(XMFLOAT3(gameObjects[8]->getPosition().x + 40.f, gameObjects[5]->getPosition().y, gameObjects[5]->getPosition().z));
+		gameObjects[6]->setPosition(XMFLOAT3(gameObjects[9]->getPosition().x + 40.f, gameObjects[6]->getPosition().y, gameObjects[6]->getPosition().z));
+		renderManager.loopSpotLights(&spotLight, &spotLight2, gameObjects[7]->getPosition().x);
+	}
+	gameObjects[7]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[8]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[9]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	if (gameObjects[7]->getPosition().x < -30.0f)
+	{
+		gameObjects[7]->setPosition(XMFLOAT3(gameObjects[4]->getPosition().x + 40.f, gameObjects[7]->getPosition().y, gameObjects[7]->getPosition().z));
+		gameObjects[8]->setPosition(XMFLOAT3(gameObjects[5]->getPosition().x + 40.f, gameObjects[8]->getPosition().y, gameObjects[8]->getPosition().z));
+		gameObjects[9]->setPosition(XMFLOAT3(gameObjects[6]->getPosition().x + 40.f, gameObjects[9]->getPosition().y, gameObjects[9]->getPosition().z));
+		renderManager.loopSpotLights(&spotLight, &spotLight2, gameObjects[4]->getPosition().x);
+	}
+	
 
 	gameObjects[1]->Move(-5 * deltaTime, XMFLOAT3(1,0,0));
 	if (gameObjects[1]->getPosition().x < -10)
@@ -401,7 +448,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Set Data that is the same for the entire scene
 
 	renderManager.RenderSpot1ShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
-	//renderManager.RenderSpot2ShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
+	renderManager.RenderSpot2ShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 	renderManager.RenderDirShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 
 	renderManager.setSceneData(cam, dirLight, pointLight, spotLight, spotLight2);

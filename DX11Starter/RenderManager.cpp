@@ -116,6 +116,39 @@ void RenderManager::DefaultLastTime()
 	lastTime = 0;
 }
 
+void RenderManager::moveSpotLights(float deltaTime, SpotLight* spotLight, SpotLight* spotLight2)
+{
+	(*spotLight).location.x -= 5 * deltaTime;
+	XMMATRIX shView = XMMatrixLookToLH(
+		XMVectorSet(spotLight->location.x, spotLight->location.y, spotLight->location.z, 0),	// Light position
+		XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0),	// Light direction
+		XMVectorSet(0, 0, 1, 0));																// Up direction
+	XMStoreFloat4x4(&spot1ShadowViewMatrix, XMMatrixTranspose(shView));
+	(*spotLight2).location.x -= 5 * deltaTime;
+	shView = XMMatrixLookToLH(
+		XMVectorSet(spotLight2->location.x, spotLight2->location.y, spotLight2->location.z, 0),	// Light position
+		XMVectorSet(spotLight2->direction.x, spotLight2->direction.y, spotLight2->direction.z, 0),	// Light direction
+		XMVectorSet(0, 0, 1, 0));																// Up direction
+	XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView));
+}
+
+void RenderManager::loopSpotLights(SpotLight* spotLight, SpotLight* spotLight2, float x)
+{
+	(*spotLight).location.x = x + 8.5;
+	XMMATRIX shView = XMMatrixLookToLH(
+		XMVectorSet(spotLight->location.x, spotLight->location.y, spotLight->location.z, 0),	// Light position
+		XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0),	// Light direction
+		XMVectorSet(0, 0, 1, 0));																// Up direction
+	XMStoreFloat4x4(&spot1ShadowViewMatrix, XMMatrixTranspose(shView));
+
+	(*spotLight2).location.x = x + 18.4;
+	shView = XMMatrixLookToLH(
+		XMVectorSet(spotLight2->location.x, spotLight2->location.y, spotLight2->location.z, 0),	// Light position
+		XMVectorSet(spotLight2->direction.x, spotLight2->direction.y, spotLight2->direction.z, 0),	// Light direction
+		XMVectorSet(0, 0, 1, 0));																// Up direction
+	XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView));
+}
+
 void RenderManager::rotateDirLight(int x, int y, int z, float radian, DirectionalLight* dirLight)
 {
 	XMVECTOR spotDir = XMVectorSet(dirLight->direction.x, dirLight->direction.y, dirLight->direction.z, 0);
@@ -246,7 +279,7 @@ void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * con
 		spotLight2->angle * 2,	// Top Down FOV Angle (radians)
 		1.0f,					// View Space Aspect Ratio
 		0.1f,					// Near clip
-		5.0f);					// Far clip
+		10.0f);					// Far clip
 	XMStoreFloat4x4(&spot2ShadowProjectionMatrix, XMMatrixTranspose(shProj2));
 	// Texture2D
 	D3D11_TEXTURE2D_DESC spot2ShadowDesc = {};
@@ -553,13 +586,15 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	ID3D11ShaderResourceView* texture5;
 	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/ceiling.png", 0, &texture5);
 	ID3D11ShaderResourceView* texture6;
-	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/wallTransparent.png", 0, &texture6);
+	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/wall.png", 0, &texture6);
 	ID3D11ShaderResourceView* texture7;
 	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/floor.png", 0, &texture7);
 	ID3D11ShaderResourceView* texture8;
 	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/crate.png", 0, &texture8);
 	ID3D11ShaderResourceView* texture9;
 	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/coin.png", 0, &texture9);
+	ID3D11ShaderResourceView* texture10;
+	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/background.jpg", 0, &texture10);
 
 
 	ID3D11ShaderResourceView* particleTexture;
@@ -582,6 +617,7 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	textures.push_back(texture7);
 	textures.push_back(texture8);
 	textures.push_back(texture9);
+	textures.push_back(texture10);
 
 	ID3D11ShaderResourceView* normalMap;
 	CreateWICTextureFromFile(device, context, L"textures/rockNormals.jpg", 0, &normalMap);
@@ -698,6 +734,10 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[8]->AttatchTexture(textures[8], sampler);
 	materials[8]->AttatchNormalMap(normalMaps[0]);
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[9]->AttatchTexture(textures[9], sampler);
+	materials[9]->AttatchNormalMap(normalMaps[0]);
 }
 
 void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height)

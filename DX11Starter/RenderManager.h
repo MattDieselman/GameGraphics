@@ -75,9 +75,11 @@ public:
 	void RenderSpot1ShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
 	void RenderSpot2ShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
 	void RenderDirShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
-	void RenderManager::DefaultLastTime();
-	void RenderManager::UpdateSpotLights(float deltaTime, float totalTime, SpotLight* spotLight, SpotLight* spotLight2);
-	void RenderManager::rotateDirLight(int x, int y, int z, float radian, DirectionalLight* dirLight);
-	void RenderManager::rotateSpotLights(int x, int y, int z, float radian, SpotLight* spotLight, SpotLight* spotLight2);
+	void DefaultLastTime();
+	void moveSpotLights(float deltaTime, SpotLight* spotLight, SpotLight* spotLight2);
+	void loopSpotLights(SpotLight* spotLight, SpotLight* spotLight2, float x);
+	void UpdateSpotLights(float deltaTime, float totalTime, SpotLight* spotLight, SpotLight* spotLight2);
+	void rotateDirLight(int x, int y, int z, float radian, DirectionalLight* dirLight);
+	void rotateSpotLights(int x, int y, int z, float radian, SpotLight* spotLight, SpotLight* spotLight2);
 };
 
