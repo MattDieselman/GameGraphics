@@ -354,7 +354,7 @@ void Game::Update(float deltaTime, float totalTime)
 	gameObjects[1]->Move(-5 * deltaTime, XMFLOAT3(1,0,0));
 	if (gameObjects[1]->getPosition().x < -10)
 	{
-		gameObjects[1]->setPosition(XMFLOAT3(10, gameObjects[2]->getPosition().y, 0));
+		gameObjects[1]->setPosition(XMFLOAT3(10, gameObjects[1]->getPosition().y, 0));
 	}
 
 	gameObjects[2]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
