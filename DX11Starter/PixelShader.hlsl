@@ -75,6 +75,10 @@ SamplerComparisonState ShadowSampler : register(s1);
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
+	// Sample the texture
+	float4 surfaceColor = diffuseTexture.Sample(sampState, input.uv);
+	clip(surfaceColor.a - 0.1f);
+
 	// Re-normalize interpolated normals
 	input.normal = normalize(input.normal);
 	input.tangent = normalize(input.tangent);
@@ -121,8 +125,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float sLightAmount2 = saturate(dot(input.normal, dirToSL2)) * objInRange2;
 	float4 sLightTotal2 = (spotLight2.diffuseColor * sLightAmount2) + spotLight2.ambientColor;
 
-	// Sample the texture
-	float4 surfaceColor = diffuseTexture.Sample(sampState, input.uv);
+	
 
 	// Shadow mapping calculations and sample
 	// Spot 1

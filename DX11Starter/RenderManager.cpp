@@ -553,7 +553,7 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	ID3D11ShaderResourceView* texture5;
 	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/ceiling.png", 0, &texture5);
 	ID3D11ShaderResourceView* texture6;
-	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/wall.jpg", 0, &texture6);
+	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/wallTransparent.png", 0, &texture6);
 	ID3D11ShaderResourceView* texture7;
 	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/floor.png", 0, &texture7);
 	ID3D11ShaderResourceView* texture8;
