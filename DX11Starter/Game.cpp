@@ -135,7 +135,7 @@ void Game::Init()
 	gameObjects[4]->setScale(XMFLOAT3(20, 4, 1));
 	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[4]->copy()));
 	gameObjects[5]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[5]->setPosition(XMFLOAT3(0, 4, 2));
+	gameObjects[5]->setPosition(XMFLOAT3(0, 4.5, 2));
 	gameObjects[5]->setRotation(XMFLOAT3(XM_PI / 2, 0, 0));
 	gameObjects[5]->setScale(XMFLOAT3(10, 5, 1));
 	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[6]->copy()));
@@ -143,6 +143,12 @@ void Game::Init()
 	gameObjects[6]->setPosition(XMFLOAT3(0, -3.5, 2));
 	gameObjects[6]->setRotation(XMFLOAT3(-XM_PI / 2, 0, 0));
 	gameObjects[6]->setScale(XMFLOAT3(10, 5, 1));
+
+	// Coin
+	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[7]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[7]->setPosition(XMFLOAT3(0, 0, 0));
+	gameObjects[7]->setScale(XMFLOAT3(3, 3, 3));
 
 	inputManager = InputManager(&hWnd, gameObjects[0], cam, &worldUp);
 
@@ -307,6 +313,7 @@ void Game::CreateBasicGeometry()
 	meshes.push_back(new Mesh("OBJ Files/helix.obj", device));
 	meshes.push_back(new Mesh("OBJ Files/sphere.obj", device));
 	meshes.push_back(new Mesh("OBJ Files/torus.obj", device));
+	meshes.push_back(new Mesh("OBJ Files/coin.obj", device));
 }
 
 

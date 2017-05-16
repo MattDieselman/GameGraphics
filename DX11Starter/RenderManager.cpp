@@ -558,6 +558,8 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/floor.png", 0, &texture7);
 	ID3D11ShaderResourceView* texture8;
 	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/crate.png", 0, &texture8);
+	ID3D11ShaderResourceView* texture9;
+	CreateWICTextureFromFile(device, context, L"textures/INPROGRESS/textures/coin.png", 0, &texture9);
 
 
 	ID3D11ShaderResourceView* particleTexture;
@@ -579,6 +581,7 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	textures.push_back(texture6);
 	textures.push_back(texture7);
 	textures.push_back(texture8);
+	textures.push_back(texture9);
 
 	ID3D11ShaderResourceView* normalMap;
 	CreateWICTextureFromFile(device, context, L"textures/rockNormals.jpg", 0, &normalMap);
@@ -691,6 +694,10 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	materials.push_back(new Material(vertexShader, pixelShader));
 	materials[7]->AttatchTexture(textures[7], sampler);
 	materials[7]->AttatchNormalMap(normalMaps[0]);
+
+	materials.push_back(new Material(vertexShader, pixelShader));
+	materials[8]->AttatchTexture(textures[8], sampler);
+	materials[8]->AttatchNormalMap(normalMaps[0]);
 }
 
 void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height)
