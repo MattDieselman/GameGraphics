@@ -45,6 +45,7 @@ private:
 	std::vector<Mesh*> meshes;
 
 	DirectionalLight dirLight;
+	DirectionalLight dirLight2;
 	PointLight pointLight;
 	SpotLight spotLight;
 	SpotLight spotLight2;

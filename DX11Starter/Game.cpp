@@ -79,6 +79,9 @@ void Game::Init()
 	dirLight.diffuseColor = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.f);
 	dirLight.direction = XMFLOAT3(0.f, -1.f, 0.f);
 	//renderManager.rotateDirLight(0, 0, 1, XM_PI / 90, &dirLight);
+	dirLight2.ambientColor = XMFLOAT4(.0f, .0f, .0f, 1.f);
+	dirLight2.diffuseColor = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.f);
+	dirLight2.direction = XMFLOAT3(0.f, 0.f, 1.f);
 
 	pointLight.ambientColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
 	pointLight.diffuseColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
@@ -118,7 +121,7 @@ void Game::Init()
 	gameObjects[0]->init(ColliderType::SPHERE, 1.f);
 	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[7]->copy()));
 	gameObjects[1]->init(ColliderType::AABB, 1.f);
-	gameObjects[1]->setPosition(XMFLOAT3(5, 2, 0));
+	gameObjects[1]->setPosition(XMFLOAT3(5, 3, 0));
 	gameObjects[1]->setScale(XMFLOAT3(2, 2, 1));
 	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[7]->copy()));
 	gameObjects[2]->init(ColliderType::AABB, 1.f);
@@ -169,11 +172,43 @@ void Game::Init()
 	gameObjects[10]->setPosition(XMFLOAT3(0.f, 3.f, 2.1f));
 	gameObjects[10]->setScale(XMFLOAT3(8.9f, 7.f, 1.f));
 
-	// Coin
+	// Coins
 	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[11]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[11]->setPosition(XMFLOAT3(0, 0, 0));
+	gameObjects[11]->setPosition(XMFLOAT3(10, 2, 0));
 	gameObjects[11]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[12]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[12]->setPosition(XMFLOAT3(11, 2, 0));
+	gameObjects[12]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[13]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[13]->setPosition(XMFLOAT3(12, 2, 0));
+	gameObjects[13]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[14]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[14]->setPosition(XMFLOAT3(10, 1, 0));
+	gameObjects[14]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[15]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[15]->setPosition(XMFLOAT3(11, 1, 0));
+	gameObjects[15]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[16]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[16]->setPosition(XMFLOAT3(12, 1, 0));
+	gameObjects[16]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[17]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[17]->setPosition(XMFLOAT3(10, 0, 0));
+	gameObjects[17]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[18]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[18]->setPosition(XMFLOAT3(11, 0, 0));
+	gameObjects[18]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[19]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[19]->setPosition(XMFLOAT3(12, 0, 0));
+	gameObjects[19]->setScale(XMFLOAT3(3, 3, 3));
 
 	inputManager = InputManager(&hWnd, gameObjects[0], cam, &worldUp);
 
@@ -404,7 +439,30 @@ void Game::Update(float deltaTime, float totalTime)
 		renderManager.loopSpotLights(&spotLight, &spotLight2, gameObjects[4]->getPosition().x);
 	}
 	
+	// Move Coins
+	gameObjects[11]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[12]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[13]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[14]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[15]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[16]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[17]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[18]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[19]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	if (gameObjects[13]->getPosition().x < -7.8)
+	{
+		gameObjects[11]->setPosition(XMFLOAT3(10, gameObjects[11]->getPosition().y, 0));
+		gameObjects[12]->setPosition(XMFLOAT3(11, gameObjects[12]->getPosition().y, 0));
+		gameObjects[13]->setPosition(XMFLOAT3(12, gameObjects[13]->getPosition().y, 0));
+		gameObjects[14]->setPosition(XMFLOAT3(10, gameObjects[14]->getPosition().y, 0));
+		gameObjects[15]->setPosition(XMFLOAT3(11, gameObjects[15]->getPosition().y, 0));
+		gameObjects[16]->setPosition(XMFLOAT3(12, gameObjects[16]->getPosition().y, 0));
+		gameObjects[17]->setPosition(XMFLOAT3(10, gameObjects[17]->getPosition().y, 0));
+		gameObjects[18]->setPosition(XMFLOAT3(11, gameObjects[18]->getPosition().y, 0));
+		gameObjects[19]->setPosition(XMFLOAT3(12, gameObjects[19]->getPosition().y, 0));
+	}
 
+	// Move Obstacles
 	gameObjects[1]->Move(-5 * deltaTime, XMFLOAT3(1,0,0));
 	if (gameObjects[1]->getPosition().x < -10)
 	{
@@ -451,7 +509,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	renderManager.RenderSpot2ShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 	renderManager.RenderDirShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 
-	renderManager.setSceneData(cam, dirLight, pointLight, spotLight, spotLight2);
+	renderManager.setSceneData(cam, dirLight, dirLight2, pointLight, spotLight, spotLight2);
 
 	renderManager.DrawAll(context, gameObjects, cam, emitters, backBufferRTV, depthStencilView, width, height);
 

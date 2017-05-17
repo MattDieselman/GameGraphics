@@ -41,7 +41,7 @@ std::vector<Material*> RenderManager::getMaterials()
 	return materials;
 }
 
-void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, PointLight pointLight, SpotLight spotLight, SpotLight spotLight2)
+void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, DirectionalLight dirLight2, PointLight pointLight, SpotLight spotLight, SpotLight spotLight2)
 {
 	// Data going to Vertex Shader
 	materials[0]->getVertexShader()->SetMatrix4x4("view", cam->getView());
@@ -59,6 +59,10 @@ void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, PointL
 	bool checkDL = materials[0]->getPixelShader()->SetData(
 		"dirLight",
 		&dirLight,
+		sizeof(DirectionalLight));
+	bool checkDL2 = materials[0]->getPixelShader()->SetData(
+		"dirLight2",
+		&dirLight2,
 		sizeof(DirectionalLight));
 	bool checkPL = materials[0]->getPixelShader()->SetData(
 		"pointLight",
@@ -317,13 +321,13 @@ void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * con
 	XMMATRIX shView3 = XMMatrixLookToLH(
 		XMVectorSet(0, 3.5, 0, 0),																// Light position
 		XMVectorSet(dirLight->direction.x, dirLight->direction.y, dirLight->direction.z, 0),	// Light direction
-		XMVectorSet(0, 0, 1, 0));																// Up direction
+		XMVectorSet(1, 0, 0, 0));																// Up direction
 	XMStoreFloat4x4(&dirShadowViewMatrix, XMMatrixTranspose(shView3));
 	XMMATRIX shProj3 = XMMatrixOrthographicLH(
-		20.0f,					// View Width
-		20.0f,					// View Height
-		0.001f,					// Near clip
-		20.0f);					// Far clip
+		2.f,					// View Width
+		20.f,					// View Height
+		0.1f,					// Near clip
+		10.0f);					// Far clip
 	XMStoreFloat4x4(&dirShadowProjectionMatrix, XMMatrixTranspose(shProj3));
 	// Texture2D
 	D3D11_TEXTURE2D_DESC dirShadowDesc = {};

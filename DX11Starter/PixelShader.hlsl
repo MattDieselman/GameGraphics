@@ -47,6 +47,8 @@ struct SpotLight
 cbuffer data : register(b0)
 {
 	DirectionalLight dirLight;
+	DirectionalLight dirLight2;
+	DirectionalLight dirLight3;
 
 	PointLight pointLight;
 
@@ -98,6 +100,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float3 dirToDL = normalize(-dirLight.direction);
 	float dLightAmount = saturate(dot(input.normal, dirToDL));
 	float4 dLightTotal = (dirLight.diffuseColor * dLightAmount) + dirLight.ambientColor;
+	// Directional light calculations
+	float3 dirToDL2 = normalize(-dirLight2.direction);
+	float dLightAmount2 = saturate(dot(input.normal, dirToDL2));
+	float4 dLightTotal2 = (dirLight2.diffuseColor * dLightAmount2) + dirLight2.ambientColor;
 	
 	/*float3 dirTo2 = normalize(-light2.Direction);
 	float3 light2Amount = saturate(dot(input.normal, dirTo2));
@@ -147,7 +153,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// Final lighting calculations
 	//return shadowAmount;
-	return (dLightTotal * surfaceColor * dirShadowAmount) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor * spot1ShadowAmount) + (sLightTotal2 * surfaceColor * spot2ShadowAmount) + specular.rrrr;
+	return (dLightTotal * surfaceColor * dirShadowAmount) + (dLightTotal2 * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor * spot1ShadowAmount) + (sLightTotal2 * surfaceColor * spot2ShadowAmount) + specular.rrrr;
 	//return (dLightTotal * surfaceColor) + (pLightTotal * surfaceColor) + (sLightTotal * surfaceColor) + specular.rrrr;
 	//return (sLightTotal * surfaceColor);
 }
