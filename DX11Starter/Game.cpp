@@ -125,7 +125,7 @@ void Game::Init()
 	gameObjects[0]->init(ColliderType::SPHERE, 1.f);
 	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[7]->copy()));
 	gameObjects[1]->init(ColliderType::AABB, 1.f);
-	gameObjects[1]->setPosition(XMFLOAT3(5, 3, 0));
+	gameObjects[1]->setPosition(XMFLOAT3(5, 2.5, 0));
 	gameObjects[1]->setScale(XMFLOAT3(2, 2, 1));
 	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[7]->copy()));
 	gameObjects[2]->init(ColliderType::AABB, 1.f);
@@ -139,35 +139,35 @@ void Game::Init()
 	// Wall
 	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[5]->copy()));
 	gameObjects[4]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[4]->setPosition(XMFLOAT3(14, 0.5, 2));
+	gameObjects[4]->setPosition(XMFLOAT3(13, 0.5, 2));
 	gameObjects[4]->setScale(XMFLOAT3(20, 4, 1));
 	// Ceiling
 	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[4]->copy()));
 	gameObjects[5]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[5]->setPosition(XMFLOAT3(14, 4.5, 2));
+	gameObjects[5]->setPosition(XMFLOAT3(13, 4.5, 2));
 	gameObjects[5]->setRotation(XMFLOAT3(XM_PI / 2, 0, 0));
 	gameObjects[5]->setScale(XMFLOAT3(20, 5, 1));
 	// Floor
 	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[6]->copy()));
 	gameObjects[6]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[6]->setPosition(XMFLOAT3(14, -3.5, 2));
+	gameObjects[6]->setPosition(XMFLOAT3(13, -3.5, 2));
 	gameObjects[6]->setRotation(XMFLOAT3(-XM_PI / 2, 0, 0));
 	gameObjects[6]->setScale(XMFLOAT3(20, 5, 1));
 	// Wall2
 	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[5]->copy()));
 	gameObjects[7]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[7]->setPosition(XMFLOAT3(54, 0.5, 2));
+	gameObjects[7]->setPosition(XMFLOAT3(53, 0.5, 2));
 	gameObjects[7]->setScale(XMFLOAT3(20, 4, 1));
 	// Ceiling2
 	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[4]->copy()));
 	gameObjects[8]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[8]->setPosition(XMFLOAT3(54, 4.5, 2));
+	gameObjects[8]->setPosition(XMFLOAT3(53, 4.5, 2));
 	gameObjects[8]->setRotation(XMFLOAT3(XM_PI / 2, 0, 0));
 	gameObjects[8]->setScale(XMFLOAT3(20, 5, 1));
 	// Floor2
 	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[6]->copy()));
 	gameObjects[9]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[9]->setPosition(XMFLOAT3(54, -3.5, 2));
+	gameObjects[9]->setPosition(XMFLOAT3(53, -3.5, 2));
 	gameObjects[9]->setRotation(XMFLOAT3(-XM_PI / 2, 0, 0));
 	gameObjects[9]->setScale(XMFLOAT3(20, 5, 1));
 	// Background
@@ -179,39 +179,39 @@ void Game::Init()
 	// Coins
 	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[11]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[11]->setPosition(XMFLOAT3(10, 2, 0));
+	gameObjects[11]->setPosition(XMFLOAT3(15, 2, 0));
 	gameObjects[11]->setScale(XMFLOAT3(3, 3, 3));
 	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[12]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[12]->setPosition(XMFLOAT3(11, 2, 0));
+	gameObjects[12]->setPosition(XMFLOAT3(16, 2, 0));
 	gameObjects[12]->setScale(XMFLOAT3(3, 3, 3));
 	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[13]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[13]->setPosition(XMFLOAT3(12, 2, 0));
+	gameObjects[13]->setPosition(XMFLOAT3(17, 2, 0));
 	gameObjects[13]->setScale(XMFLOAT3(3, 3, 3));
 	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[14]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[14]->setPosition(XMFLOAT3(10, 1, 0));
+	gameObjects[14]->setPosition(XMFLOAT3(15, 1, 0));
 	gameObjects[14]->setScale(XMFLOAT3(3, 3, 3));
 	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[15]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[15]->setPosition(XMFLOAT3(11, 1, 0));
+	gameObjects[15]->setPosition(XMFLOAT3(16, 1, 0));
 	gameObjects[15]->setScale(XMFLOAT3(3, 3, 3));
 	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[16]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[16]->setPosition(XMFLOAT3(12, 1, 0));
+	gameObjects[16]->setPosition(XMFLOAT3(17, 1, 0));
 	gameObjects[16]->setScale(XMFLOAT3(3, 3, 3));
 	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[17]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[17]->setPosition(XMFLOAT3(10, 0, 0));
+	gameObjects[17]->setPosition(XMFLOAT3(15, 0, 0));
 	gameObjects[17]->setScale(XMFLOAT3(3, 3, 3));
 	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[18]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[18]->setPosition(XMFLOAT3(11, 0, 0));
+	gameObjects[18]->setPosition(XMFLOAT3(16, 0, 0));
 	gameObjects[18]->setScale(XMFLOAT3(3, 3, 3));
 	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[19]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[19]->setPosition(XMFLOAT3(12, 0, 0));
+	gameObjects[19]->setPosition(XMFLOAT3(17, 0, 0));
 	gameObjects[19]->setScale(XMFLOAT3(3, 3, 3));
 
 	for (int i = 11; i < 20; i++)
@@ -553,7 +553,7 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 	}
 	// Loop Coins
-	if (gameObjects[13]->getPosition().x < -7.8)
+	if (gameObjects[13]->getPosition().x < -7.87)
 	{
 		// Reset Position
 		for (int i = 11; i < 20; i++)
