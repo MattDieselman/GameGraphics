@@ -210,6 +210,13 @@ void Game::Init()
 	gameObjects[19]->setPosition(XMFLOAT3(12, 0, 0));
 	gameObjects[19]->setScale(XMFLOAT3(3, 3, 3));
 
+	for (int i = 11; i < 20; i++)
+	{
+		std::bitset<1> temp;
+		coinCollected.push_back(temp);
+	}
+
+
 	inputManager = InputManager(&hWnd, gameObjects[0], cam, &worldUp);
 
 	/*objects.push_back(new Obstacle(meshes[8]->copy(),materials[2]->copy(), ColliderType::AABB));
@@ -438,29 +445,6 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[9]->setPosition(XMFLOAT3(gameObjects[6]->getPosition().x + 40.f, gameObjects[9]->getPosition().y, gameObjects[9]->getPosition().z));
 		renderManager.loopSpotLights(&spotLight, &spotLight2, gameObjects[4]->getPosition().x);
 	}
-	
-	// Move Coins
-	gameObjects[11]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[12]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[13]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[14]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[15]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[16]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[17]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[18]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[19]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	if (gameObjects[13]->getPosition().x < -7.8)
-	{
-		gameObjects[11]->setPosition(XMFLOAT3(10, gameObjects[11]->getPosition().y, 0));
-		gameObjects[12]->setPosition(XMFLOAT3(11, gameObjects[12]->getPosition().y, 0));
-		gameObjects[13]->setPosition(XMFLOAT3(12, gameObjects[13]->getPosition().y, 0));
-		gameObjects[14]->setPosition(XMFLOAT3(10, gameObjects[14]->getPosition().y, 0));
-		gameObjects[15]->setPosition(XMFLOAT3(11, gameObjects[15]->getPosition().y, 0));
-		gameObjects[16]->setPosition(XMFLOAT3(12, gameObjects[16]->getPosition().y, 0));
-		gameObjects[17]->setPosition(XMFLOAT3(10, gameObjects[17]->getPosition().y, 0));
-		gameObjects[18]->setPosition(XMFLOAT3(11, gameObjects[18]->getPosition().y, 0));
-		gameObjects[19]->setPosition(XMFLOAT3(12, gameObjects[19]->getPosition().y, 0));
-	}
 
 	// Move Obstacles
 	gameObjects[1]->Move(-5 * deltaTime, XMFLOAT3(1,0,0));
@@ -496,6 +480,55 @@ void Game::Update(float deltaTime, float totalTime)
 	{
 		gameObjects[3]->setPosition(XMFLOAT3(10, 0, 0));
 	}
+
+	// Move Coins
+	for (int i = 11; i < 20; i++)
+	{
+		gameObjects[i]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	} 
+	// Coin Animations
+	for (int i = 11; i < 20; i++)
+	{
+		if (gameObjects[i]->getScale().x < 0.1f)
+		{
+			coinCollected[i - 11].set();
+		}
+	}
+	// Coin Pickups
+	for (int i = 11; i < 20; i++)
+	{
+		if (coinCollected[i - 11].to_ulong() == 0)
+		{
+			if (CollisionCheck[gameObjects[0]->getCollider().colliderType][gameObjects[i]->getCollider().colliderType](*gameObjects[0], *gameObjects[i]))
+			{
+				coinCollected[i - 11].set();
+			}
+		}
+	}
+	// Loop Coins
+	if (gameObjects[13]->getPosition().x < -7.8)
+	{
+		// Reset Position
+		gameObjects[11]->setPosition(XMFLOAT3(10, gameObjects[11]->getPosition().y, 0));
+		gameObjects[12]->setPosition(XMFLOAT3(11, gameObjects[12]->getPosition().y, 0));
+		gameObjects[13]->setPosition(XMFLOAT3(12, gameObjects[13]->getPosition().y, 0));
+		gameObjects[14]->setPosition(XMFLOAT3(10, gameObjects[14]->getPosition().y, 0));
+		gameObjects[15]->setPosition(XMFLOAT3(11, gameObjects[15]->getPosition().y, 0));
+		gameObjects[16]->setPosition(XMFLOAT3(12, gameObjects[16]->getPosition().y, 0));
+		gameObjects[17]->setPosition(XMFLOAT3(10, gameObjects[17]->getPosition().y, 0));
+		gameObjects[18]->setPosition(XMFLOAT3(11, gameObjects[18]->getPosition().y, 0));
+		gameObjects[19]->setPosition(XMFLOAT3(12, gameObjects[19]->getPosition().y, 0));
+		// Reset Collected
+		for (int i = 11; i < 20; i++)
+		{
+			if (coinCollected[i - 11].to_ulong() == 1)
+			{
+				coinCollected[i - 11].set(0, 0);
+			}
+		}
+	}
+
+
 }
 
 // --------------------------------------------------------
@@ -511,7 +544,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	renderManager.setSceneData(cam, dirLight, dirLight2, pointLight, spotLight, spotLight2);
 
-	renderManager.DrawAll(context, gameObjects, cam, emitters, backBufferRTV, depthStencilView, width, height);
+	renderManager.DrawAll(context, gameObjects, cam, emitters, backBufferRTV, depthStencilView, width, height, coinCollected);
 
 	// Unbind the shadow map so we don't have resource conflicts
 	// at the start of the next frame

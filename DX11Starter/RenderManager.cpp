@@ -120,6 +120,20 @@ void RenderManager::DefaultLastTime()
 	lastTime = 0;
 }
 
+void RenderManager::coinSpinShrink(float totalTime, float radian, Entity * coinObj)
+{	
+	if (totalTime > lastTime + 0.1f)
+	{
+		coinObj->setScale(XMFLOAT3(coinObj->getScale().x, coinObj->getScale().y, coinObj->getScale().z));
+
+		XMVECTOR pastRotation = XMVectorSet(coinObj->getRotation().x, coinObj->getRotation().y, coinObj->getRotation().z, 0.f);
+		pastRotation = XMVector3Rotate(pastRotation, XMQuaternionRotationAxis(XMVectorSet(0, 1, 0, 0), radian));
+		XMFLOAT3 newRotation;
+		XMStoreFloat3(&newRotation, pastRotation);
+		coinObj->setRotation(newRotation);
+	}
+}
+
 void RenderManager::moveSpotLights(float deltaTime, SpotLight* spotLight, SpotLight* spotLight2)
 {
 	(*spotLight).location.x -= 5 * deltaTime;
@@ -153,18 +167,6 @@ void RenderManager::loopSpotLights(SpotLight* spotLight, SpotLight* spotLight2, 
 	XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView));
 }
 
-void RenderManager::rotateDirLight(int x, int y, int z, float radian, DirectionalLight* dirLight)
-{
-	XMVECTOR spotDir = XMVectorSet(dirLight->direction.x, dirLight->direction.y, dirLight->direction.z, 0);
-	spotDir = XMVector3Rotate(spotDir, XMQuaternionRotationAxis(XMVectorSet(x, y, z, 0), radian));
-	XMStoreFloat3(&(*dirLight).direction, spotDir);
-	XMMATRIX shView = XMMatrixLookToLH(
-		XMVectorSet(0, 3.5, 0., 0),		// Light position
-		spotDir,						// Light direction
-		XMVectorSet(0, 0, 1, 0));		// Up direction
-	XMStoreFloat4x4(&dirShadowViewMatrix, XMMatrixTranspose(shView));
-}
-
 void RenderManager::rotateSpotLights(int x, int y, int z, float radian, SpotLight* spotLight, SpotLight* spotLight2)
 {
 	XMVECTOR spotDir = XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0);
@@ -184,45 +186,6 @@ void RenderManager::rotateSpotLights(int x, int y, int z, float radian, SpotLigh
 		spotDir,						// Light direction
 		XMVectorSet(0, 0, 1, 0));		// Up direction
 	XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView));
-}
-
-void RenderManager::UpdateSpotLights(float deltaTime, float totalTime, SpotLight* spotLight, SpotLight* spotLight2)
-{
-	// Spot Light 1
-	// Translation
-	if ((*spotLight).location.x < -18) { (*spotLight).location.x = 18; }
-	(*spotLight).location.x -= 4 * deltaTime;
-	// Rotation
-	if (totalTime > lastTime + 0.01)
-	{
-		XMVECTOR spotDir = XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0);
-		spotDir = XMVector3Rotate(spotDir, XMQuaternionRotationAxis(XMVectorSet(0, 0, 1, 0), XM_PI / 36));
-		XMStoreFloat3(&(*spotLight).direction, spotDir);
-		XMMATRIX shView = XMMatrixLookToLH(
-			XMVectorSet(spotLight->location.x, spotLight->location.y, spotLight->location.z, 0),	// Light position
-			spotDir,																				// Light direction
-			XMVectorSet(0, 0, 1, 0));																// Up direction
-		XMStoreFloat4x4(&spot1ShadowViewMatrix, XMMatrixTranspose(shView));
-	}
-	
-	// Spot Light 2
-	// Translation
-	if ((*spotLight2).location.x < -18) { (*spotLight2).location.x = 18; }
-	(*spotLight2).location.x -= 4 * deltaTime;
-	// Rotation
-	if (totalTime > lastTime + 0.01)
-	{
-		XMVECTOR spotDir = XMVectorSet(spotLight2->direction.x, spotLight2->direction.y, spotLight2->direction.z, 0);
-		spotDir = XMVector3Rotate(spotDir, XMQuaternionRotationAxis(XMVectorSet(0, 0, 1, 0), XM_PI / 36));
-		XMStoreFloat3(&(*spotLight2).direction, spotDir);
-		XMMATRIX shView = XMMatrixLookToLH(
-			XMVectorSet(spotLight2->location.x, spotLight2->location.y, spotLight2->location.z, 0),	// Light position
-			spotDir,																				// Light direction
-			XMVectorSet(0, 0, 1, 0));																// Up direction
-		XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView));
-	}
-
-	lastTime = totalTime;
 }
 
 void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * context, SpotLight* spotLight, SpotLight* spotLight2, DirectionalLight* dirLight)
@@ -744,7 +707,7 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	materials[9]->AttatchNormalMap(normalMaps[0]);
 }
 
-void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height)
+void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height, std::vector<std::bitset<1>> coinCollected)
 {
 	// Background color (Cornflower Blue in this case) for clearing
 	const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
@@ -765,25 +728,55 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> 
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
+
+	int index = 0;
 	for (Entity* object : gameObjects)
 	{
-		setObjData(object);
+		if (index >= 11 && index <= 19)
+		{
+			if (coinCollected[index - 11].to_ulong() != 1)
+			{
+				setObjData(object);
 
-		object->getMat()->getVertexShader()->SetShader();
+				object->getMat()->getVertexShader()->SetShader();
 
-		object->getMat()->getPixelShader()->SetShader();
+				object->getMat()->getPixelShader()->SetShader();
 
-		// Set buffers in the input assembler
-		//  - Do this ONCE PER OBJECT you're drawing, since each object might
-		//    have different geometry.
-		ID3D11Buffer *verts = object->getMesh()->getVertexBuffer();
-		context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
-		context->IASetIndexBuffer(object->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+				// Set buffers in the input assembler
+				//  - Do this ONCE PER OBJECT you're drawing, since each object might
+				//    have different geometry.
+				ID3D11Buffer *verts = object->getMesh()->getVertexBuffer();
+				context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
+				context->IASetIndexBuffer(object->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
-		context->DrawIndexed(
-			object->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
+				context->DrawIndexed(
+					object->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+					0,     // Offset to the first index we want to use
+					0);    // Offset to add to each index when looking up vertices
+			}
+		}
+		else
+		{
+			setObjData(object);
+
+			object->getMat()->getVertexShader()->SetShader();
+
+			object->getMat()->getPixelShader()->SetShader();
+
+			// Set buffers in the input assembler
+			//  - Do this ONCE PER OBJECT you're drawing, since each object might
+			//    have different geometry.
+			ID3D11Buffer *verts = object->getMesh()->getVertexBuffer();
+			context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
+			context->IASetIndexBuffer(object->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+
+			context->DrawIndexed(
+				object->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+				0,     // Offset to the first index we want to use
+				0);    // Offset to add to each index when looking up vertices
+		}
+		
+		index++;
 	}
 
 	//Draw Emitter & parts
