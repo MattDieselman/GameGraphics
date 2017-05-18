@@ -43,6 +43,12 @@ public:
 private:
 	//std::vector<ID3D11ShaderResourceView*> textures;
 
+	bool speedBoost;
+	float boostDuration;
+	float boostTime;
+
+	int scrollSpeed;
+
 	std::vector<Mesh*> meshes;
 
 	DirectionalLight dirLight;

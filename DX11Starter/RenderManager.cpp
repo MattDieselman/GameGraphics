@@ -137,15 +137,15 @@ void RenderManager::coinSpinShrink(float totalTime, float radian, Entity * coinO
 	}
 }
 
-void RenderManager::moveSpotLights(float deltaTime, SpotLight* spotLight, SpotLight* spotLight2)
+void RenderManager::moveSpotLights(float scrollSpeed, float deltaTime, SpotLight* spotLight, SpotLight* spotLight2)
 {
-	(*spotLight).location.x -= 5 * deltaTime;
+	(*spotLight).location.x += scrollSpeed * deltaTime;
 	XMMATRIX shView = XMMatrixLookToLH(
 		XMVectorSet(spotLight->location.x, spotLight->location.y, spotLight->location.z, 0),	// Light position
 		XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0),	// Light direction
 		XMVectorSet(0, 0, 1, 0));																// Up direction
 	XMStoreFloat4x4(&spot1ShadowViewMatrix, XMMatrixTranspose(shView));
-	(*spotLight2).location.x -= 5 * deltaTime;
+	(*spotLight2).location.x += scrollSpeed * deltaTime;
 	shView = XMMatrixLookToLH(
 		XMVectorSet(spotLight2->location.x, spotLight2->location.y, spotLight2->location.z, 0),	// Light position
 		XMVectorSet(spotLight2->direction.x, spotLight2->direction.y, spotLight2->direction.z, 0),	// Light direction
@@ -725,10 +725,11 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	materials[9]->AttatchNormalMap(normalMaps[0]);
 }
 
-void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height, std::vector<std::bitset<1>> coinCollected)
+void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height, std::vector<std::bitset<1>> coinCollected, bool speedBoost)
 {
 	// Background color (Cornflower Blue in this case) for clearing
 	const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
+	const float black[4] = { 0, 0, 0, 0 };
 
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
@@ -742,8 +743,8 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> 
 
 	// Set up the post process render target =======================
 	context->OMSetRenderTargets(1, &ppRTV1, depthStencilView);
-	context->ClearRenderTargetView(ppRTV1, color);
-	context->ClearRenderTargetView(ppRTV2, color);
+	context->ClearRenderTargetView(ppRTV1, black);
+	context->ClearRenderTargetView(ppRTV2, black);
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
@@ -820,14 +821,10 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> 
 	ppPS->SetShader();
 	ppPS->SetShaderResourceView("Pixels", ppSRV1);
 	ppPS->SetSamplerState("Sampler", ppSampler);
-	ppPS->SetFloat("pixelWidth", 1.0f / width);
-	ppPS->SetFloat("pixelHeight", 1.0f / height);
-	if (gameObjects[0]->yMovement)
-		ppPS->SetInt("blurAmountY", 5);
-	else
-		ppPS->SetInt("blurAmountY", 0);
-	if (gameObjects[0]->xMovement)
-		ppPS->SetInt("blurAmountX", 5);
+	ppPS->SetFloat("pixelWidth", 2.0f / width);
+	ppPS->SetFloat("pixelHeight", 2.0f / height);
+	if (speedBoost)
+		ppPS->SetInt("blurAmountX", 15);
 	else
 		ppPS->SetInt("blurAmountX", 0);
 	ppPS->CopyAllBufferData();
@@ -868,7 +865,7 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> 
 		0,     // Offset to the first index we want to use
 		0);    // Offset to add to each index when looking up vertices
 
-	// Actually put stuff on the screen ====================
+	// Actually put stuff on the screen ===========================
 	context->OMSetRenderTargets(1, &backBufferRTV, 0);
 
 	// Turn on VS

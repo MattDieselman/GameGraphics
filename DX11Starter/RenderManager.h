@@ -71,7 +71,7 @@ public:
 	void setObjData(Entity* object);
 
 	void LoadShaders(ID3D11Device* device, ID3D11DeviceContext* context, unsigned int width, unsigned int height);
-	void DrawAll(ID3D11DeviceContext* context, std::vector<Entity*> gameObjects,Camera * cam, std::vector<Emitter*> emitters,  ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int  width, unsigned int height, std::vector<std::bitset<1>> coinCollected);
+	void DrawAll(ID3D11DeviceContext* context, std::vector<Entity*> gameObjects,Camera * cam, std::vector<Emitter*> emitters,  ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int  width, unsigned int height, std::vector<std::bitset<1>> coinCollected, bool speedBoost);
 
 	SimpleVertexShader * getPartVert();
 	SimplePixelShader * getPartPix();
@@ -82,7 +82,7 @@ public:
 	void RenderSpot2ShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
 	void RenderDirShadowMap(ID3D11DeviceContext* context, std::vector<Entity*>* gameObjects, ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int* width, unsigned int* height);
 	void DefaultLastTime();
-	void moveSpotLights(float deltaTime, SpotLight* spotLight, SpotLight* spotLight2);
+	void moveSpotLights(float scrollSpeed, float deltaTime, SpotLight* spotLight, SpotLight* spotLight2);
 	void loopSpotLights(SpotLight* spotLight, SpotLight* spotLight2, float x);
 	void rotateSpotLights(int x, int y, int z, float radian, SpotLight* spotLight, SpotLight* spotLight2);
 

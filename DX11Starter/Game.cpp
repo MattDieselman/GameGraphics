@@ -21,6 +21,10 @@ Game::Game(HINSTANCE hInstance)
 		true)			   // Show extra stats (fps) in title bar?
 {
 	// Initialize fields
+	speedBoost = true;
+	boostDuration = 1.f;
+	boostTime = 0.f;
+	scrollSpeed = -5;
 
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
@@ -463,13 +467,13 @@ void Game::Update(float deltaTime, float totalTime)
 	}*/
 
 	// Move Environment
-	renderManager.moveSpotLights(deltaTime, &spotLight, &spotLight2);
-	gameObjects[4]->Move(-5, XMFLOAT3(1, 0, 0));
-	gameObjects[5]->Move(-5, XMFLOAT3(1, 0, 0));
-	gameObjects[6]->Move(-5, XMFLOAT3(1, 0, 0));
-	gameObjects[7]->Move(-5, XMFLOAT3(1, 0, 0));
-	gameObjects[8]->Move(-5, XMFLOAT3(1, 0, 0));
-	gameObjects[9]->Move(-5, XMFLOAT3(1, 0, 0));
+	renderManager.moveSpotLights(scrollSpeed, deltaTime, &spotLight, &spotLight2);
+	gameObjects[4]->Move(scrollSpeed, XMFLOAT3(1, 0, 0));
+	gameObjects[5]->Move(scrollSpeed, XMFLOAT3(1, 0, 0));
+	gameObjects[6]->Move(scrollSpeed, XMFLOAT3(1, 0, 0));
+	gameObjects[7]->Move(scrollSpeed, XMFLOAT3(1, 0, 0));
+	gameObjects[8]->Move(scrollSpeed, XMFLOAT3(1, 0, 0));
+	gameObjects[9]->Move(scrollSpeed, XMFLOAT3(1, 0, 0));
 	if (gameObjects[4]->getPosition().x < -30.0f)
 	{
 		gameObjects[4]->setPosition(XMFLOAT3(gameObjects[7]->getPosition().x + 40.f, gameObjects[4]->getPosition().y, gameObjects[4]->getPosition().z));
@@ -485,13 +489,13 @@ void Game::Update(float deltaTime, float totalTime)
 		renderManager.loopSpotLights(&spotLight, &spotLight2, gameObjects[4]->getPosition().x);
 	}
 	
-	gameObjects[1]->Move(-5, XMFLOAT3(1,0,0));
+	gameObjects[1]->Move(scrollSpeed, XMFLOAT3(1,0,0));
 	if (gameObjects[1]->getPosition().x < -10)
 	{
 		gameObjects[1]->setPosition(XMFLOAT3(10, gameObjects[1]->getPosition().y, 0));
 	}
 
-	gameObjects[2]->Move(-5, XMFLOAT3(1, 0, 0));
+	gameObjects[2]->Move(scrollSpeed, XMFLOAT3(1, 0, 0));
 	if (gameObjects[2]->getPosition().x < -10)
 	{
 		gameObjects[2]->setPosition(XMFLOAT3(10, gameObjects[2]->getPosition().y, 0));
@@ -522,7 +526,7 @@ void Game::Update(float deltaTime, float totalTime)
 	// Move Coins
 	for (int i = 11; i < 20; i++)
 	{
-		gameObjects[i]->Move(-5, XMFLOAT3(1, 0, 0));
+		gameObjects[i]->Move(-5 - (5 * speedBoost), XMFLOAT3(1, 0, 0));
 		emitters[i - 9]->setPosition(gameObjects[i]->getPosition());
 	} 
 	// Coin Animations
@@ -543,6 +547,8 @@ void Game::Update(float deltaTime, float totalTime)
 				coinCollected[i - 11].set();
 				emitters[i-9]->setPosition(gameObjects[i]->getPosition());
 				emitters[i-9]->shouldDraw = false;
+				speedBoost = true;
+				scrollSpeed = -10;
 			}
 		}
 	}
@@ -574,8 +580,20 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 	}
 
-	for (Entity * gameObject : gameObjects) {
+	for (Entity * gameObject : gameObjects)
+	{
 		gameObject->update(deltaTime);
+	}
+
+	if (speedBoost)
+	{
+		boostTime += deltaTime;
+		if (boostTime >= boostDuration)
+		{
+			boostTime = 0;
+			speedBoost = false;
+			scrollSpeed = -5;
+		}
 	}
 }
 
@@ -592,7 +610,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	renderManager.setSceneData(cam, dirLight, dirLight2, pointLight, spotLight, spotLight2);
 
-	renderManager.DrawAll(context, gameObjects, cam, emitters, backBufferRTV, depthStencilView, width, height, coinCollected);
+	renderManager.DrawAll(context, gameObjects, cam, emitters, backBufferRTV, depthStencilView, width, height, coinCollected, speedBoost);
 
 	// Unbind the shadow map so we don't have resource conflicts
 	// at the start of the next frame
