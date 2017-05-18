@@ -13,6 +13,7 @@
 #include "RenderManager.h"
 #include "Enemy.h"
 #include "Emitter.h"
+#include <bitset>
 
 class Game 
 	: public DXCore
@@ -45,6 +46,7 @@ private:
 	std::vector<Mesh*> meshes;
 
 	DirectionalLight dirLight;
+	DirectionalLight dirLight2;
 	PointLight pointLight;
 	SpotLight spotLight;
 	SpotLight spotLight2;
@@ -57,6 +59,8 @@ private:
 	std::vector<Entity*> gameObjects;
 	std::vector<Obstacle*> objects;
 	std::vector<Material*> materials;
+
+	std::vector<std::bitset<1>> coinCollected;
 
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void CreateMatrices();

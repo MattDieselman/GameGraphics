@@ -57,6 +57,9 @@ private:
 	SimplePixelShader* pixShader;
 
 public:
+
+	bool shouldDraw;
+	bool isWorld;
 	Emitter();
 	~Emitter();
 
@@ -76,7 +79,7 @@ public:
 		ID3D11ShaderResourceView* texture_);
 
 	void setPosition(DirectX::XMFLOAT3 position);
-
+	void randomizeVelocity();
 	void Update(float dt);
 	void UpdateSinglePart(float dt, int index);
 	void SpawnPart();
@@ -84,6 +87,7 @@ public:
 	void CopyPartsToGPU(ID3D11DeviceContext* context);
 	void CopyPart(int index);
 	void DrawAll(ID3D11DeviceContext* context, Camera* camera);
+
 
 };
 

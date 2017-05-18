@@ -21,7 +21,7 @@ InputManager::~InputManager()
 
 // ---------- KEYBOARD INPUT ---------------------------------------------------
 
-void InputManager::update(float deltaTime)
+void InputManager::update(float deltaTime,std::vector<Emitter*>emitters)
 {
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
@@ -32,11 +32,17 @@ void InputManager::update(float deltaTime)
 	{
 		player->Move(7.5, XMFLOAT3(0, 1, 0));
 		player->yMovement = true;
+
+		emitters[0]->shouldDraw = true;
+		emitters[1]->shouldDraw = true;
 	}
 	else
 	{
 		player->Move(7.5, XMFLOAT3(0, -1, 0));
 		player->yMovement = false;
+
+		emitters[0]->shouldDraw = false;
+		emitters[1]->shouldDraw = false;
 	}
 
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
@@ -54,12 +60,6 @@ void InputManager::update(float deltaTime)
 	}
 	else
 		player->xMovement = false;
-
-	/*
-	if (GetAsyncKeyState(' ') & 0x8000) {
-		// use ability
-	}
-	*/
 
 	// CAMERA CONTROLS
 #if defined(DEBUG) || defined(_DEBUG)

@@ -13,14 +13,12 @@ Emitter::~Emitter()
 	delete[] localPartVerts;
 	vertBuffer->Release();
 	indexBuffer->Release();
-
-	//delete pixShader;
-	//delete vertShader;
-	texture->Release();
 }
 
 Emitter::Emitter(int maxParticles_, int particlesPerSecond_, float lifetime_, float startSize_, float endSize_, DirectX::XMFLOAT4 startColor_, DirectX::XMFLOAT4 endColor_, DirectX::XMFLOAT3 startVelocity_, DirectX::XMFLOAT3 emitterPosition_, DirectX::XMFLOAT3 emitterAcceleration_, ID3D11Device * device_, SimpleVertexShader * vertShader_, SimplePixelShader * pixShader_, ID3D11ShaderResourceView * texture_)
 {
+	shouldDraw = true;
+	isWorld = true;
 	vertShader = vertShader_;
 	pixShader = pixShader_;
 	texture = texture_;
@@ -89,8 +87,24 @@ void Emitter::setPosition(DirectX::XMFLOAT3 position)
 	emitterPos = position;
 }
 
-void Emitter::Update(float dt)
+void Emitter::randomizeVelocity()
 {
+	for(int i = 0; i < maxParticles;i++) {
+		particles[i].StartVelocity.x += (((float)rand() / RAND_MAX) * 2 - 1);
+		particles[i].StartVelocity.y += (((float)rand() / RAND_MAX) * 2 - 1);
+		particles[i].StartVelocity.z += (((float)rand() / RAND_MAX) * 2 - 1);
+	}
+}
+
+
+void Emitter::Update(float dt)
+{	
+
+	while (timeSinceEmit > secsPerParticle)
+	{
+		if(shouldDraw)SpawnPart();
+		timeSinceEmit -= secsPerParticle;
+	}
 	if (firstAliveIndex < firstDeadIndex)
 	{
 		for (int i = firstAliveIndex; i < firstDeadIndex; i++)
@@ -106,11 +120,7 @@ void Emitter::Update(float dt)
 
 
 	timeSinceEmit += dt;
-	while (timeSinceEmit > secsPerParticle)
-	{
-		SpawnPart();
-		timeSinceEmit -= secsPerParticle;
-	}
+
 }
 
 void Emitter::UpdateSinglePart(float dt, int index)
@@ -125,6 +135,8 @@ void Emitter::UpdateSinglePart(float dt, int index)
 		firstAliveIndex++;
 		firstAliveIndex %= maxParticles;
 		liveParticles--;
+		//move particles off the screen so they dont create the cloud of death
+		particles[index].Position = XMFLOAT3(-100, -100, -100);
 		return;
 	}
 
@@ -133,13 +145,27 @@ void Emitter::UpdateSinglePart(float dt, int index)
 	DirectX::XMStoreFloat4(&particles[index].Color, DirectX::XMVectorLerp(DirectX::XMLoadFloat4(&startColor), DirectX::XMLoadFloat4(&endColor), ageLerp));
 	particles[index].Size = startSize + ageLerp*(endSize - startSize);
 
+
+	//Move Particles
 	DirectX::XMVECTOR startPos = DirectX::XMLoadFloat3(&emitterPos);
+	DirectX::XMFLOAT3 temp = particles[index].Position;
+	DirectX::XMVECTOR currentPos = DirectX::XMLoadFloat3(&temp);
 	DirectX::XMVECTOR startVel = DirectX::XMLoadFloat3(&particles[index].StartVelocity);
 	DirectX::XMVECTOR accel = DirectX::XMLoadFloat3(&emitterAccel);
 	float t = particles[index].Age;
-	DirectX::XMStoreFloat3(
-		&particles[index].Position,
-		accel * t * t / 1.0f + startVel * t + startPos);
+
+	//move based on last position
+	if (isWorld) {
+		DirectX::XMStoreFloat3(
+			&particles[index].Position,
+			accel * t * t / 1.0f + startVel * t + currentPos);
+	}
+	else
+	{
+		DirectX::XMStoreFloat3(
+			&particles[index].Position,
+			accel * t * t / 1.0f + startVel * t + startPos);
+	}
 }
 
 void Emitter::SpawnPart()
@@ -156,10 +182,15 @@ void Emitter::SpawnPart()
 	particles[firstDeadIndex].StartVelocity = startVel;
 
 	//give some randomness to all the parts
-	particles[firstDeadIndex].StartVelocity.x += ((float)rand() / RAND_MAX) * 0.4f - 0.2f;
-	particles[firstDeadIndex].StartVelocity.y += ((float)rand() / RAND_MAX) * 0.4f - 0.2f;
-	particles[firstDeadIndex].StartVelocity.z += ((float)rand() / RAND_MAX) * 0.4f - 0.2f;
+	particles[firstDeadIndex].StartVelocity.x += ((float)rand() / RAND_MAX) * 0.1f - 0.09f;
+	particles[firstDeadIndex].StartVelocity.y += ((float)rand() / RAND_MAX) * 0.1f - 0.09f;
+	particles[firstDeadIndex].StartVelocity.z += ((float)rand() / RAND_MAX) * 0.1f - 0.09f;
 
+	if (!isWorld) {
+		particles[firstDeadIndex].StartVelocity.x += (((float)rand() / RAND_MAX) * 2 - 1);
+		particles[firstDeadIndex].StartVelocity.y += (((float)rand() / RAND_MAX) * 2 - 1);
+		particles[firstDeadIndex].StartVelocity.z += (((float)rand() / RAND_MAX) * 2 - 1);
+	}
 	firstDeadIndex++;
 	firstDeadIndex %= maxParticles;
 	liveParticles++;
@@ -208,6 +239,14 @@ void Emitter::CopyPart(int index)
 
 void Emitter::DrawAll(ID3D11DeviceContext * context, Camera * camera)
 {
+	/*
+	if (!shouldDraw) {
+		timeSinceEmit = 0;
+		liveParticles = 0;
+		firstAliveIndex = 0;
+		firstDeadIndex = 1;
+		return;
+	}//*/
 	CopyPartsToGPU(context);
 	UINT stride = sizeof(ParticleVertex);
 	UINT offset = 0;
@@ -232,4 +271,5 @@ void Emitter::DrawAll(ID3D11DeviceContext * context, Camera * camera)
 		context->DrawIndexed((maxParticles - firstAliveIndex) * 6, firstAliveIndex * 6, 0);
 
 	}
+	
 }

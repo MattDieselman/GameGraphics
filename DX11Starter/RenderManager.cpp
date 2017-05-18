@@ -44,7 +44,7 @@ std::vector<Material*> RenderManager::getMaterials()
 	return materials;
 }
 
-void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, PointLight pointLight, SpotLight spotLight, SpotLight spotLight2)
+void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, DirectionalLight dirLight2, PointLight pointLight, SpotLight spotLight, SpotLight spotLight2)
 {
 	// Data going to Vertex Shader
 	materials[0]->getVertexShader()->SetMatrix4x4("view", cam->getView());
@@ -62,6 +62,10 @@ void RenderManager::setSceneData(Camera * cam, DirectionalLight dirLight, PointL
 	bool checkDL = materials[0]->getPixelShader()->SetData(
 		"dirLight",
 		&dirLight,
+		sizeof(DirectionalLight));
+	bool checkDL2 = materials[0]->getPixelShader()->SetData(
+		"dirLight2",
+		&dirLight2,
 		sizeof(DirectionalLight));
 	bool checkPL = materials[0]->getPixelShader()->SetData(
 		"pointLight",
@@ -119,6 +123,20 @@ void RenderManager::DefaultLastTime()
 	lastTime = 0;
 }
 
+void RenderManager::coinSpinShrink(float totalTime, float radian, Entity * coinObj)
+{	
+	if (totalTime > lastTime + 0.1f)
+	{
+		coinObj->setScale(XMFLOAT3(coinObj->getScale().x, coinObj->getScale().y, coinObj->getScale().z));
+
+		XMVECTOR pastRotation = XMVectorSet(coinObj->getRotation().x, coinObj->getRotation().y, coinObj->getRotation().z, 0.f);
+		pastRotation = XMVector3Rotate(pastRotation, XMQuaternionRotationAxis(XMVectorSet(0, 1, 0, 0), radian));
+		XMFLOAT3 newRotation;
+		XMStoreFloat3(&newRotation, pastRotation);
+		coinObj->setRotation(newRotation);
+	}
+}
+
 void RenderManager::moveSpotLights(float deltaTime, SpotLight* spotLight, SpotLight* spotLight2)
 {
 	(*spotLight).location.x -= 5 * deltaTime;
@@ -152,18 +170,6 @@ void RenderManager::loopSpotLights(SpotLight* spotLight, SpotLight* spotLight2, 
 	XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView));
 }
 
-void RenderManager::rotateDirLight(int x, int y, int z, float radian, DirectionalLight* dirLight)
-{
-	XMVECTOR spotDir = XMVectorSet(dirLight->direction.x, dirLight->direction.y, dirLight->direction.z, 0);
-	spotDir = XMVector3Rotate(spotDir, XMQuaternionRotationAxis(XMVectorSet(x, y, z, 0), radian));
-	XMStoreFloat3(&(*dirLight).direction, spotDir);
-	XMMATRIX shView = XMMatrixLookToLH(
-		XMVectorSet(0, 3.5, 0., 0),		// Light position
-		spotDir,						// Light direction
-		XMVectorSet(0, 0, 1, 0));		// Up direction
-	XMStoreFloat4x4(&dirShadowViewMatrix, XMMatrixTranspose(shView));
-}
-
 void RenderManager::rotateSpotLights(int x, int y, int z, float radian, SpotLight* spotLight, SpotLight* spotLight2)
 {
 	XMVECTOR spotDir = XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0);
@@ -183,45 +189,6 @@ void RenderManager::rotateSpotLights(int x, int y, int z, float radian, SpotLigh
 		spotDir,						// Light direction
 		XMVectorSet(0, 0, 1, 0));		// Up direction
 	XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView));
-}
-
-void RenderManager::UpdateSpotLights(float deltaTime, float totalTime, SpotLight* spotLight, SpotLight* spotLight2)
-{
-	// Spot Light 1
-	// Translation
-	if ((*spotLight).location.x < -18) { (*spotLight).location.x = 18; }
-	(*spotLight).location.x -= 4 * deltaTime;
-	// Rotation
-	if (totalTime > lastTime + 0.01)
-	{
-		XMVECTOR spotDir = XMVectorSet(spotLight->direction.x, spotLight->direction.y, spotLight->direction.z, 0);
-		spotDir = XMVector3Rotate(spotDir, XMQuaternionRotationAxis(XMVectorSet(0, 0, 1, 0), XM_PI / 36));
-		XMStoreFloat3(&(*spotLight).direction, spotDir);
-		XMMATRIX shView = XMMatrixLookToLH(
-			XMVectorSet(spotLight->location.x, spotLight->location.y, spotLight->location.z, 0),	// Light position
-			spotDir,																				// Light direction
-			XMVectorSet(0, 0, 1, 0));																// Up direction
-		XMStoreFloat4x4(&spot1ShadowViewMatrix, XMMatrixTranspose(shView));
-	}
-	
-	// Spot Light 2
-	// Translation
-	if ((*spotLight2).location.x < -18) { (*spotLight2).location.x = 18; }
-	(*spotLight2).location.x -= 4 * deltaTime;
-	// Rotation
-	if (totalTime > lastTime + 0.01)
-	{
-		XMVECTOR spotDir = XMVectorSet(spotLight2->direction.x, spotLight2->direction.y, spotLight2->direction.z, 0);
-		spotDir = XMVector3Rotate(spotDir, XMQuaternionRotationAxis(XMVectorSet(0, 0, 1, 0), XM_PI / 36));
-		XMStoreFloat3(&(*spotLight2).direction, spotDir);
-		XMMATRIX shView = XMMatrixLookToLH(
-			XMVectorSet(spotLight2->location.x, spotLight2->location.y, spotLight2->location.z, 0),	// Light position
-			spotDir,																				// Light direction
-			XMVectorSet(0, 0, 1, 0));																// Up direction
-		XMStoreFloat4x4(&spot2ShadowViewMatrix, XMMatrixTranspose(shView));
-	}
-
-	lastTime = totalTime;
 }
 
 void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * context, SpotLight* spotLight, SpotLight* spotLight2, DirectionalLight* dirLight)
@@ -320,13 +287,13 @@ void RenderManager::InitShadows(ID3D11Device * device, ID3D11DeviceContext * con
 	XMMATRIX shView3 = XMMatrixLookToLH(
 		XMVectorSet(0, 3.5, 0, 0),																// Light position
 		XMVectorSet(dirLight->direction.x, dirLight->direction.y, dirLight->direction.z, 0),	// Light direction
-		XMVectorSet(0, 0, 1, 0));																// Up direction
+		XMVectorSet(1, 0, 0, 0));																// Up direction
 	XMStoreFloat4x4(&dirShadowViewMatrix, XMMatrixTranspose(shView3));
 	XMMATRIX shProj3 = XMMatrixOrthographicLH(
-		20.0f,					// View Width
-		20.0f,					// View Height
-		0.001f,					// Near clip
-		20.0f);					// Far clip
+		2.f,					// View Width
+		20.f,					// View Height
+		0.1f,					// Near clip
+		10.0f);					// Far clip
 	XMStoreFloat4x4(&dirShadowProjectionMatrix, XMMatrixTranspose(shProj3));
 	// Texture2D
 	D3D11_TEXTURE2D_DESC dirShadowDesc = {};
@@ -606,12 +573,15 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 
 	ID3D11ShaderResourceView* particleTexture;
 	ID3D11ShaderResourceView* particleTexture2;
+	ID3D11ShaderResourceView* particleTexture3;
 
 	CreateWICTextureFromFile(device, context, L"textures/fireParticle.jpg", 0, &particleTexture);
 	CreateWICTextureFromFile(device, context, L"textures/particle.jpg", 0, &particleTexture2);
+	CreateWICTextureFromFile(device, context, L"textures/sparkle.png", 0, &particleTexture3);
 
 	particleTextures.push_back(particleTexture);
 	particleTextures.push_back(particleTexture2);
+	particleTextures.push_back(particleTexture3);
 
 	textures.push_back(texture1);
 	textures.push_back(texture2);
@@ -755,7 +725,7 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	materials[9]->AttatchNormalMap(normalMaps[0]);
 }
 
-void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height)
+void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> gameObjects, Camera * cam, std::vector<Emitter*> emitters, ID3D11RenderTargetView* backBufferRTV,ID3D11DepthStencilView* depthStencilView, unsigned int width, unsigned int height, std::vector<std::bitset<1>> coinCollected)
 {
 	// Background color (Cornflower Blue in this case) for clearing
 	const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
@@ -777,26 +747,53 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> 
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
+
 	//for (Entity* object : gameObjects)
 	for (int i = 1; i < gameObjects.size(); i++)
 	{
-		setObjData(gameObjects[i]);
+		if (i >= 11 && i <= 19)
+		{
+			if (coinCollected[i - 11].to_ulong() != 1)
+			{
+				setObjData(gameObjects[i]);
 
-		gameObjects[i]->getMat()->getVertexShader()->SetShader();
+				gameObjects[i]->getMat()->getVertexShader()->SetShader();
 
-		gameObjects[i]->getMat()->getPixelShader()->SetShader();
+				gameObjects[i]->getMat()->getPixelShader()->SetShader();
 
-		// Set buffers in the input assembler
-		//  - Do this ONCE PER OBJECT you're drawing, since each object might
-		//    have different geometry.
-		ID3D11Buffer *verts = gameObjects[i]->getMesh()->getVertexBuffer();
-		context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
-		context->IASetIndexBuffer(gameObjects[i]->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+				// Set buffers in the input assembler
+				//  - Do this ONCE PER OBJECT you're drawing, since each object might
+				//    have different geometry.
+				ID3D11Buffer *verts = gameObjects[i]->getMesh()->getVertexBuffer();
+				context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
+				context->IASetIndexBuffer(gameObjects[i]->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
-		context->DrawIndexed(
-			gameObjects[i]->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
+				context->DrawIndexed(
+					gameObjects[i]->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+					0,     // Offset to the first index we want to use
+					0);    // Offset to add to each index when looking up vertices
+			}
+		}
+		else
+		{
+			setObjData(gameObjects[i]);
+
+			gameObjects[i]->getMat()->getVertexShader()->SetShader();
+
+			gameObjects[i]->getMat()->getPixelShader()->SetShader();
+
+			// Set buffers in the input assembler
+			//  - Do this ONCE PER OBJECT you're drawing, since each object might
+			//    have different geometry.
+			ID3D11Buffer *verts = gameObjects[i]->getMesh()->getVertexBuffer();
+			context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
+			context->IASetIndexBuffer(gameObjects[i]->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+
+			context->DrawIndexed(
+				gameObjects[i]->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+				0,     // Offset to the first index we want to use
+				0);    // Offset to add to each index when looking up vertices
+		}
 	}
 
 	//Draw Emitter & parts

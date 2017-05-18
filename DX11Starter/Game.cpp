@@ -79,6 +79,9 @@ void Game::Init()
 	dirLight.diffuseColor = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.f);
 	dirLight.direction = XMFLOAT3(0.f, -1.f, 0.f);
 	//renderManager.rotateDirLight(0, 0, 1, XM_PI / 90, &dirLight);
+	dirLight2.ambientColor = XMFLOAT4(.0f, .0f, .0f, 1.f);
+	dirLight2.diffuseColor = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.f);
+	dirLight2.direction = XMFLOAT3(0.f, 0.f, 1.f);
 
 	pointLight.ambientColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
 	pointLight.diffuseColor = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
@@ -118,7 +121,7 @@ void Game::Init()
 	gameObjects[0]->init(ColliderType::SPHERE, 1.f);
 	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[7]->copy()));
 	gameObjects[1]->init(ColliderType::AABB, 1.f);
-	gameObjects[1]->setPosition(XMFLOAT3(5, 2, 0));
+	gameObjects[1]->setPosition(XMFLOAT3(5, 3, 0));
 	gameObjects[1]->setScale(XMFLOAT3(2, 2, 1));
 	gameObjects.push_back(new Entity(meshes[4]->copy(), materials[7]->copy()));
 	gameObjects[2]->init(ColliderType::AABB, 1.f);
@@ -130,50 +133,89 @@ void Game::Init()
 
 	// Environment
 	// Wall
-	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[5]->copy()));
+	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[5]->copy()));
 	gameObjects[4]->init(ColliderType::SPHERE, 1.f);
 	gameObjects[4]->setPosition(XMFLOAT3(14, 0.5, 2));
 	gameObjects[4]->setScale(XMFLOAT3(20, 4, 1));
 	// Ceiling
-	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[4]->copy()));
+	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[4]->copy()));
 	gameObjects[5]->init(ColliderType::SPHERE, 1.f);
 	gameObjects[5]->setPosition(XMFLOAT3(14, 4.5, 2));
 	gameObjects[5]->setRotation(XMFLOAT3(XM_PI / 2, 0, 0));
 	gameObjects[5]->setScale(XMFLOAT3(20, 5, 1));
 	// Floor
-	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[6]->copy()));
+	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[6]->copy()));
 	gameObjects[6]->init(ColliderType::SPHERE, 1.f);
 	gameObjects[6]->setPosition(XMFLOAT3(14, -3.5, 2));
 	gameObjects[6]->setRotation(XMFLOAT3(-XM_PI / 2, 0, 0));
 	gameObjects[6]->setScale(XMFLOAT3(20, 5, 1));
 	// Wall2
-	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[5]->copy()));
+	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[5]->copy()));
 	gameObjects[7]->init(ColliderType::SPHERE, 1.f);
 	gameObjects[7]->setPosition(XMFLOAT3(54, 0.5, 2));
 	gameObjects[7]->setScale(XMFLOAT3(20, 4, 1));
 	// Ceiling2
-	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[4]->copy()));
+	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[4]->copy()));
 	gameObjects[8]->init(ColliderType::SPHERE, 1.f);
 	gameObjects[8]->setPosition(XMFLOAT3(54, 4.5, 2));
 	gameObjects[8]->setRotation(XMFLOAT3(XM_PI / 2, 0, 0));
 	gameObjects[8]->setScale(XMFLOAT3(20, 5, 1));
 	// Floor2
-	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[6]->copy()));
+	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[6]->copy()));
 	gameObjects[9]->init(ColliderType::SPHERE, 1.f);
 	gameObjects[9]->setPosition(XMFLOAT3(54, -3.5, 2));
 	gameObjects[9]->setRotation(XMFLOAT3(-XM_PI / 2, 0, 0));
 	gameObjects[9]->setScale(XMFLOAT3(20, 5, 1));
 	// Background
-	gameObjects.push_back(new Enemy(meshes[1]->copy(), materials[9]->copy()));
+	gameObjects.push_back(new Entity(meshes[1]->copy(), materials[9]->copy()));
 	gameObjects[10]->init(ColliderType::AABB, 1.f);
 	gameObjects[10]->setPosition(XMFLOAT3(0.f, 3.f, 2.1f));
 	gameObjects[10]->setScale(XMFLOAT3(8.9f, 7.f, 1.f));
 
-	// Coin
-	gameObjects.push_back(new Enemy(meshes[9]->copy(), materials[8]->copy()));
+	// Coins
+	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
 	gameObjects[11]->init(ColliderType::SPHERE, 1.f);
-	gameObjects[11]->setPosition(XMFLOAT3(0, 0, 0));
+	gameObjects[11]->setPosition(XMFLOAT3(10, 2, 0));
 	gameObjects[11]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[12]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[12]->setPosition(XMFLOAT3(11, 2, 0));
+	gameObjects[12]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[13]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[13]->setPosition(XMFLOAT3(12, 2, 0));
+	gameObjects[13]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[14]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[14]->setPosition(XMFLOAT3(10, 1, 0));
+	gameObjects[14]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[15]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[15]->setPosition(XMFLOAT3(11, 1, 0));
+	gameObjects[15]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[16]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[16]->setPosition(XMFLOAT3(12, 1, 0));
+	gameObjects[16]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[17]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[17]->setPosition(XMFLOAT3(10, 0, 0));
+	gameObjects[17]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[18]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[18]->setPosition(XMFLOAT3(11, 0, 0));
+	gameObjects[18]->setScale(XMFLOAT3(3, 3, 3));
+	gameObjects.push_back(new Entity(meshes[9]->copy(), materials[8]->copy()));
+	gameObjects[19]->init(ColliderType::SPHERE, 1.f);
+	gameObjects[19]->setPosition(XMFLOAT3(12, 0, 0));
+	gameObjects[19]->setScale(XMFLOAT3(3, 3, 3));
+
+	for (int i = 11; i < 20; i++)
+	{
+		std::bitset<1> temp;
+		coinCollected.push_back(temp);
+	}
+
 
 	inputManager = InputManager(&hWnd, gameObjects[0], cam, &worldUp);
 
@@ -190,17 +232,18 @@ void Game::Init()
 
 	Emitter* emitter;
 	Emitter* emitter2;
+	//Fire & smoke
 	emitter = new Emitter(
 		1000,							// Max particles
 		100,							// Particles per second
-		1,								// Particle lifetime
+		.4,								// Particle lifetime
 		0.1f,							// Start size
 		5.0f,							// End size
 		XMFLOAT4(1, 0.1f, 0.1f, 0.2f),	// Start color
 		XMFLOAT4(1, 0.6f, 0.1f, 0),		// End color
-		XMFLOAT3(0, -1, 0),				// Start velocity
+		XMFLOAT3(-.1, -.8, 0),				// Start velocity
 		gameObjects[0]->getPosition(),				// Start position
-		XMFLOAT3(0, -10, 0),				// Start acceleration
+		XMFLOAT3(0, 3, 0),				// Start acceleration
 		device,
 		renderManager.getPartVert(),
 		renderManager.getPartPix(),
@@ -208,21 +251,61 @@ void Game::Init()
 	emitter2 = new Emitter(
 		1000,							// Max particles
 		100,							// Particles per second
-		5,								// Particle lifetime
-		0.1f,							// Start size
-		5.0f,							// End size
-		XMFLOAT4(0.1f, 0.1f, 0.1f, .10f),	// Start color
-		XMFLOAT4(.1f, .1f, .1f, 0),		// End color
-		XMFLOAT3(0, -1, 0),				// Start velocity
+		.5,								// Particle lifetime
+		.5f,							// Start size
+		4.0f,							// End size
+		XMFLOAT4(0.1f, 0.1f, 0.1f, .40f),	// Start color
+		XMFLOAT4(.1f, .1f, .1f, .60f),		// End color
+		XMFLOAT3(-.1, -.1, 0),				// Start velocity
 		gameObjects[0]->getPosition(),				// Start position
-		XMFLOAT3(0, -.1, 0),				// Start acceleration
+		XMFLOAT3(-.1, .05, 0),				// Start acceleration
 		device,
 		renderManager.getPartVert(),
 		renderManager.getPartPix(),
 		renderManager.getPartText(1));
 
+	//Create random spread
+
 	emitters.push_back(emitter);
 	emitters.push_back(emitter2);
+
+	for (int i = 0; i < 9; i++) {
+		//float randX = (((float)rand() / RAND_MAX) * 2 - 1);
+		//float randY = (((float)rand() / RAND_MAX) * 2 - 1);
+		Emitter * emitterCoin;
+		emitterCoin = new Emitter(15, 5, 1, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, 1), XMFLOAT4(.6, .6, .6, 0), XMFLOAT3(0 , 0, 0), gameObjects[11]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+		emitterCoin->isWorld = false;
+		emitterCoin->randomizeVelocity();
+		emitters.push_back(emitterCoin);
+	}
+	//#pragma region CoinEmitters
+	//	Emitter * emitterCoin2;
+	//	emitterCoin2 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[12]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin3;
+	//	emitterCoin3 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[13]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin4;
+	//	emitterCoin4 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[14]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin5;
+	//	emitterCoin5 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[15]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin6;
+	//	emitterCoin6 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[16]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin7;
+	//	emitterCoin7 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[17]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin8;
+	//	emitterCoin8 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[18]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin9;
+	//	emitterCoin9 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[19]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+
+	//#pragma endregion
+
+	//emitters.push_back(emitterCoin2);
+	//emitters.push_back(emitterCoin3);
+	//emitters.push_back(emitterCoin4);
+	//emitters.push_back(emitterCoin5);
+	//emitters.push_back(emitterCoin6);
+	//emitters.push_back(emitterCoin7);
+	//emitters.push_back(emitterCoin8);
+	//emitters.push_back(emitterCoin9);
 
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -360,11 +443,13 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {
 	cam->Update();
-	inputManager.update(deltaTime);
+	inputManager.update(deltaTime, emitters);
 	
+	emitters[0]->setPosition(gameObjects[0]->getPosition());
+	emitters[1]->setPosition(gameObjects[0]->getPosition());
+
 	for (Emitter * e : emitters)
 	{
-		e->setPosition(gameObjects[0]->getPosition());
 		e->Update(deltaTime);
 	}
 
@@ -434,6 +519,61 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[3]->setPosition(XMFLOAT3(10, 0, 0));
 	}
 
+	// Move Coins
+	for (int i = 11; i < 20; i++)
+	{
+		gameObjects[i]->Move(-5, XMFLOAT3(1, 0, 0));
+		emitters[i - 9]->setPosition(gameObjects[i]->getPosition());
+	} 
+	// Coin Animations
+	for (int i = 11; i < 20; i++)
+	{
+		if (gameObjects[i]->getScale().x < 0.1f)
+		{
+			coinCollected[i - 11].set();
+		}
+	}
+	// Coin Pickups
+	for (int i = 11; i < 20; i++)
+	{
+		if (coinCollected[i - 11].to_ulong() == 0)
+		{
+			if (CollisionCheck[gameObjects[0]->getCollider().colliderType][gameObjects[i]->getCollider().colliderType](*gameObjects[0], *gameObjects[i]))
+			{
+				coinCollected[i - 11].set();
+				emitters[i-9]->setPosition(gameObjects[i]->getPosition());
+				emitters[i-9]->shouldDraw = false;
+			}
+		}
+	}
+	// Loop Coins
+	if (gameObjects[13]->getPosition().x < -7.8)
+	{
+		// Reset Position
+		for (int i = 11; i < 20; i++)
+		{
+			gameObjects[11]->setPosition(XMFLOAT3(10, gameObjects[11]->getPosition().y, 0));
+			gameObjects[12]->setPosition(XMFLOAT3(11, gameObjects[12]->getPosition().y, 0));
+			gameObjects[13]->setPosition(XMFLOAT3(12, gameObjects[13]->getPosition().y, 0));
+			gameObjects[14]->setPosition(XMFLOAT3(10, gameObjects[14]->getPosition().y, 0));
+			gameObjects[15]->setPosition(XMFLOAT3(11, gameObjects[15]->getPosition().y, 0));
+			gameObjects[16]->setPosition(XMFLOAT3(12, gameObjects[16]->getPosition().y, 0));
+			gameObjects[17]->setPosition(XMFLOAT3(10, gameObjects[17]->getPosition().y, 0));
+			gameObjects[18]->setPosition(XMFLOAT3(11, gameObjects[18]->getPosition().y, 0));
+			gameObjects[19]->setPosition(XMFLOAT3(12, gameObjects[19]->getPosition().y, 0));
+		
+
+		// Reset Collected
+
+			if (coinCollected[i - 11].to_ulong() == 1)
+			{
+				coinCollected[i - 11].set(0, 0);
+				emitters[i - 9]->setPosition(gameObjects[i]->getPosition());
+				emitters[i - 9]->shouldDraw = true;
+			}
+		}
+	}
+
 	for (Entity * gameObject : gameObjects) {
 		gameObject->update(deltaTime);
 	}
@@ -450,9 +590,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	renderManager.RenderSpot2ShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 	renderManager.RenderDirShadowMap(context, &gameObjects, backBufferRTV, depthStencilView, &width, &height);
 
-	renderManager.setSceneData(cam, dirLight, pointLight, spotLight, spotLight2);
+	renderManager.setSceneData(cam, dirLight, dirLight2, pointLight, spotLight, spotLight2);
 
-	renderManager.DrawAll(context, gameObjects, cam, emitters, backBufferRTV, depthStencilView, width, height);
+	renderManager.DrawAll(context, gameObjects, cam, emitters, backBufferRTV, depthStencilView, width, height, coinCollected);
 
 	// Unbind the shadow map so we don't have resource conflicts
 	// at the start of the next frame
