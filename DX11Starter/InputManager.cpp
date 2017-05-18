@@ -30,13 +30,14 @@ void InputManager::update(float deltaTime,std::vector<Emitter*>emitters)
 	// PLAYER CONTROLS
 	if (GetAsyncKeyState(VK_UP) & 0x8000) {
 		player->Move(7.5 * deltaTime, XMFLOAT3(0, 1, 0));
-		for each(Emitter * e in emitters)
-			e->shouldDraw = true;
+		emitters[0]->shouldDraw = true;
+		emitters[1]->shouldDraw = true;
 	}
 	else
 	{
-		for each(Emitter * e in emitters)
-			e->shouldDraw = false;
+		emitters[0]->shouldDraw = false;
+		emitters[1]->shouldDraw = false;
+
 		player->Move(7.5 * deltaTime, XMFLOAT3(0, -1, 0));
 	}
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000) {

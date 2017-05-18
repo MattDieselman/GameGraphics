@@ -123,6 +123,7 @@ void Emitter::UpdateSinglePart(float dt, int index)
 		firstAliveIndex++;
 		firstAliveIndex %= maxParticles;
 		liveParticles--;
+		particles[index].Position = XMFLOAT3(-100, -100, -100);
 		return;
 	}
 
