@@ -9,6 +9,7 @@
 #include <WICTextureLoader.h>
 #include "Emitter.h"
 #include <time.h>
+#include <bitset>
 
 class RenderManager{
 
@@ -65,7 +66,7 @@ public:
 	void setObjData(Entity* object);
 
 	void LoadShaders(ID3D11Device* device, ID3D11DeviceContext* context, unsigned int width, unsigned int height);
-	void DrawAll(ID3D11DeviceContext* context, std::vector<Entity*> gameObjects,Camera * cam, std::vector<Emitter*> emitters,  ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int  width, unsigned int height);
+	void DrawAll(ID3D11DeviceContext* context, std::vector<Entity*> gameObjects,Camera * cam, std::vector<Emitter*> emitters,  ID3D11RenderTargetView* backBufferRTV, ID3D11DepthStencilView* depthStencilView, unsigned int  width, unsigned int height, std::vector<std::bitset<1>> coinCollected);
 
 	SimpleVertexShader * getPartVert();
 	SimplePixelShader * getPartPix();
@@ -78,8 +79,8 @@ public:
 	void DefaultLastTime();
 	void moveSpotLights(float deltaTime, SpotLight* spotLight, SpotLight* spotLight2);
 	void loopSpotLights(SpotLight* spotLight, SpotLight* spotLight2, float x);
-	void UpdateSpotLights(float deltaTime, float totalTime, SpotLight* spotLight, SpotLight* spotLight2);
-	void rotateDirLight(int x, int y, int z, float radian, DirectionalLight* dirLight);
 	void rotateSpotLights(int x, int y, int z, float radian, SpotLight* spotLight, SpotLight* spotLight2);
+	
+	void coinSpinShrink(float totalTime, float radian, Entity* coinObj);
 };
 
