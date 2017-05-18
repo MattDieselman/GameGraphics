@@ -51,8 +51,6 @@ private:
 
 	Camera * cam;
 
-
-
 	std::vector<Emitter*>emitters;
 	RenderManager renderManager;
 

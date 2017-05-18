@@ -28,10 +28,13 @@ RenderManager::~RenderManager()
 	particleBlendState->Release();
 
 	// Clean up Post-processing
-	ppRTV->Release();
-	ppSRV->Release();
+	ppRTV1->Release();
+	ppRTV2->Release();
+	ppSRV1->Release();
+	ppSRV2->Release();
 	delete ppPS;
 	delete ppVS;
+	delete screenPS;
 
 	screen->release();
 }
@@ -573,6 +576,10 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	if (!ppPS->LoadShaderFile(L"Debug/PostProcessPS.cso"))
 		ppPS->LoadShaderFile(L"PostProcessPS.cso");
 
+	screenPS = new SimplePixelShader(device, context);
+	if (!screenPS->LoadShaderFile(L"Debug/PostToScreenPS.cso"))
+		screenPS->LoadShaderFile(L"PostToScreenPS.cso");
+
 	ID3D11ShaderResourceView* texture1;
 	CreateWICTextureFromFile(device, context, L"textures/sphere.png", 0, &texture1);
 	ID3D11ShaderResourceView* texture2;
@@ -652,15 +659,15 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	textureDesc.SampleDesc.Quality = 0;
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
 
-	ID3D11Texture2D* ppTexture;
-	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+	ID3D11Texture2D* ppTexture1;
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture1);
 
 	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 	rtvDesc.Format = textureDesc.Format;
 	rtvDesc.Texture2D.MipSlice = 0;
 	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 
-	device->CreateRenderTargetView(ppTexture, &rtvDesc, &ppRTV);
+	device->CreateRenderTargetView(ppTexture1, &rtvDesc, &ppRTV1);
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Format = textureDesc.Format;
@@ -668,10 +675,18 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 
-	device->CreateShaderResourceView(ppTexture, &srvDesc, &ppSRV);
+	device->CreateShaderResourceView(ppTexture1, &srvDesc, &ppSRV1);
+
+	ID3D11Texture2D* ppTexture2;
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture2);
+
+	device->CreateRenderTargetView(ppTexture2, &rtvDesc, &ppRTV2);
+
+	device->CreateShaderResourceView(ppTexture2, &srvDesc, &ppSRV2);
 
 	// We don't need the texture reference itself anymore
-	ppTexture->Release();
+	ppTexture1->Release();
+	ppTexture2->Release();
 
 	//Particle depth and blend states
 	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
@@ -756,28 +771,30 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> 
 		0);
 
 	// Set up the post process render target =======================
-	context->OMSetRenderTargets(1, &ppRTV, depthStencilView);
-	context->ClearRenderTargetView(ppRTV, color);
+	context->OMSetRenderTargets(1, &ppRTV1, depthStencilView);
+	context->ClearRenderTargetView(ppRTV1, color);
+	context->ClearRenderTargetView(ppRTV2, color);
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
-	for (Entity* object : gameObjects)
+	//for (Entity* object : gameObjects)
+	for (int i = 1; i < gameObjects.size(); i++)
 	{
-		setObjData(object);
+		setObjData(gameObjects[i]);
 
-		object->getMat()->getVertexShader()->SetShader();
+		gameObjects[i]->getMat()->getVertexShader()->SetShader();
 
-		object->getMat()->getPixelShader()->SetShader();
+		gameObjects[i]->getMat()->getPixelShader()->SetShader();
 
 		// Set buffers in the input assembler
 		//  - Do this ONCE PER OBJECT you're drawing, since each object might
 		//    have different geometry.
-		ID3D11Buffer *verts = object->getMesh()->getVertexBuffer();
+		ID3D11Buffer *verts = gameObjects[i]->getMesh()->getVertexBuffer();
 		context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
-		context->IASetIndexBuffer(object->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+		context->IASetIndexBuffer(gameObjects[i]->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 
 		context->DrawIndexed(
-			object->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+			gameObjects[i]->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
 			0,     // Offset to the first index we want to use
 			0);    // Offset to add to each index when looking up vertices
 	}
@@ -794,7 +811,7 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> 
 	context->OMSetDepthStencilState(0, 0);
 
 	// Get ready for post processing ====================
-	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+	context->OMSetRenderTargets(1, &ppRTV2, 0);
 
 	// Turn on VS (no other data necessary)
 	ppVS->SetShader();
@@ -804,11 +821,18 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> 
 
 	// Turn on PS
 	ppPS->SetShader();
-	ppPS->SetShaderResourceView("Pixels", ppSRV);
+	ppPS->SetShaderResourceView("Pixels", ppSRV1);
 	ppPS->SetSamplerState("Sampler", ppSampler);
 	ppPS->SetFloat("pixelWidth", 1.0f / width);
 	ppPS->SetFloat("pixelHeight", 1.0f / height);
-	ppPS->SetInt("blurAmount", 5);
+	if (gameObjects[0]->yMovement)
+		ppPS->SetInt("blurAmountY", 5);
+	else
+		ppPS->SetInt("blurAmountY", 0);
+	if (gameObjects[0]->xMovement)
+		ppPS->SetInt("blurAmountX", 5);
+	else
+		ppPS->SetInt("blurAmountX", 0);
 	ppPS->CopyAllBufferData();
 
 	// Turn off vertex and index buffers
@@ -827,4 +851,49 @@ void RenderManager::DrawAll(ID3D11DeviceContext * context, std::vector<Entity*> 
 
 	// Unbind the post process SRV
 	ppPS->SetShaderResourceView("Pixels", 0);
+
+	// Draw player
+	setObjData(gameObjects[0]);
+
+	gameObjects[0]->getMat()->getVertexShader()->SetShader();
+
+	gameObjects[0]->getMat()->getPixelShader()->SetShader();
+
+	// Set buffers in the input assembler
+	//  - Do this ONCE PER OBJECT you're drawing, since each object might
+	//    have different geometry.
+	verts = gameObjects[0]->getMesh()->getVertexBuffer();
+	context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
+	context->IASetIndexBuffer(gameObjects[0]->getMesh()->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+
+	context->DrawIndexed(
+		gameObjects[0]->getMesh()->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+		0,     // Offset to the first index we want to use
+		0);    // Offset to add to each index when looking up vertices
+
+	// Actually put stuff on the screen ====================
+	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+
+	// Turn on VS
+	ppVS->SetShader();
+	verts = screen->getVertexBuffer();
+	context->IASetVertexBuffers(0, 1, &verts, &stride, &offset);
+	context->IASetIndexBuffer(screen->getIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+
+	// Turn on PS
+	screenPS->SetShader();
+	screenPS->SetShaderResourceView("Pixels", ppSRV2);
+	screenPS->SetSamplerState("Sampler", ppSampler);
+	ppPS->CopyAllBufferData();
+
+	context->DrawIndexed(
+		screen->getIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+		0,     // Offset to the first index we want to use
+		0);    // Offset to add to each index when looking up vertices
+
+	// Unbind shadow maps from shaders
+	materials[0]->getPixelShader()->SetSamplerState("ShadowSampler", 0);
+	materials[0]->getPixelShader()->SetShaderResourceView("spot1ShadowMap", 0);
+	materials[0]->getPixelShader()->SetShaderResourceView("spot2ShadowMap", 0);
+	materials[0]->getPixelShader()->SetShaderResourceView("dirShadowMap", 0);
 }

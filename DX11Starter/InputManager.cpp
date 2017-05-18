@@ -28,19 +28,32 @@ void InputManager::update(float deltaTime)
 		PostQuitMessage(0);
 
 	// PLAYER CONTROLS
-	if (GetAsyncKeyState(VK_UP) & 0x8000) {
-		player->Move(7.5 * deltaTime, XMFLOAT3(0, 1, 0));
+	if (GetAsyncKeyState(VK_UP) & 0x8000)
+	{
+		player->Move(7.5, XMFLOAT3(0, 1, 0));
+		player->yMovement = true;
 	}
 	else
 	{
-		player->Move(7.5 * deltaTime, XMFLOAT3(0, -1, 0));
+		player->Move(7.5, XMFLOAT3(0, -1, 0));
+		player->yMovement = false;
 	}
-	if (GetAsyncKeyState(VK_LEFT) & 0x8000) {
-		player->Move(5 * deltaTime, XMFLOAT3(-1, 0, 0));
+
+	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
+	{
+		player->Move(5, XMFLOAT3(-1, 0, 0));
+		player->xMovement = true;
 	}
-	if (GetAsyncKeyState(VK_RIGHT) & 0x8000) {
-		player->Move(5 * deltaTime, XMFLOAT3(1, 0, 0));
+	else
+		player->xMovement = false;
+
+	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+	{
+		player->Move(5, XMFLOAT3(1, 0, 0));
+		player->xMovement = true;
 	}
+	else
+		player->xMovement = false;
 
 	/*
 	if (GetAsyncKeyState(' ') & 0x8000) {

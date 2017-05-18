@@ -21,6 +21,8 @@ Entity::Entity(Mesh * mesh, Material * material)
 	transform.position = XMFLOAT3(0, 0, 0);
 	transform.rotation = XMFLOAT3(0, 0, 0);
 	transform.scale = XMFLOAT3(1, 1, 1);
+
+	rigidbody.velocity = XMFLOAT3(0, 0, 0);
 }
 
 Entity::~Entity()
@@ -46,6 +48,7 @@ void Entity::update(float dt)
 	XMVECTOR pos = XMLoadFloat3(&transform.position);
 	pos += XMLoadFloat3(&rigidbody.velocity) * dt;
 	XMStoreFloat3(&transform.position, pos);
+	rigidbody.velocity = XMFLOAT3(0, 0, 0);
 }
 
 XMFLOAT4X4 Entity::getWorld()
@@ -71,7 +74,7 @@ XMFLOAT3 Entity::getPosition() const
 	return transform.position;
 }
 
-XMFLOAT3 Entity::getRotation()
+XMFLOAT3 Entity::getRotation() const
 {
 	return transform.rotation;
 }
@@ -79,6 +82,11 @@ XMFLOAT3 Entity::getRotation()
 XMFLOAT3 Entity::getScale() const
 {
 	return transform.scale;
+}
+
+DirectX::XMFLOAT3 Entity::getVelocity() const
+{
+	return rigidbody.velocity;
 }
 
 void Entity::setPosition(XMFLOAT3 pos)
@@ -150,24 +158,10 @@ void Entity::calculateCollider()
 
 void Entity::Move(float speed, XMFLOAT3 rot)
 {
-	XMVECTOR pos = XMLoadFloat3(&transform.position);
+	XMVECTOR vel = XMLoadFloat3(&rigidbody.velocity);
+	vel += XMLoadFloat3(&rot) * speed;
 
-	pos = pos + (XMLoadFloat3(&rot) * speed);
-
-	//XMMATRIX w = XMLoadFloat4x4(&world);
-
-	/*XMMATRIX trans = XMMatrixTranspose( XMMatrixTranslationFromVector(pos));
-
-	XMMATRIX rotMat = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&transform.rotation));
-	XMMATRIX scal = XMMatrixScalingFromVector(XMLoadFloat3(&transform.scale));
-
-	XMMATRIX w = trans*
-		rotMat *
-		scal;*/
-
-	XMStoreFloat3(&transform.position, pos);
-
-	//XMStoreFloat4x4(&world, (w));
+	XMStoreFloat3(&rigidbody.velocity, vel);
 }
 
 bool Entity::checkCollision(const Entity& other)
@@ -194,4 +188,3 @@ bool Entity::checkCollision(const Entity& other)
 
 	return false;
 }
-

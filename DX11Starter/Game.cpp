@@ -368,10 +368,6 @@ void Game::Update(float deltaTime, float totalTime)
 		e->Update(deltaTime);
 	}
 
-	/*for (Obstacle * o : objects) {
-		o->Move(-.005, XMFLOAT3(1, 0, 0));
-	}*/
-
 	/*if (gameObjects[0]->getPosition().x < -10)
 	{
 		gameObjects[0]->setPosition(XMFLOAT3(10, 2, 0));
@@ -383,12 +379,12 @@ void Game::Update(float deltaTime, float totalTime)
 
 	// Move Environment
 	renderManager.moveSpotLights(deltaTime, &spotLight, &spotLight2);
-	gameObjects[4]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[5]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[6]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[7]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[8]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
-	gameObjects[9]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[4]->Move(-5, XMFLOAT3(1, 0, 0));
+	gameObjects[5]->Move(-5, XMFLOAT3(1, 0, 0));
+	gameObjects[6]->Move(-5, XMFLOAT3(1, 0, 0));
+	gameObjects[7]->Move(-5, XMFLOAT3(1, 0, 0));
+	gameObjects[8]->Move(-5, XMFLOAT3(1, 0, 0));
+	gameObjects[9]->Move(-5, XMFLOAT3(1, 0, 0));
 	if (gameObjects[4]->getPosition().x < -30.0f)
 	{
 		gameObjects[4]->setPosition(XMFLOAT3(gameObjects[7]->getPosition().x + 40.f, gameObjects[4]->getPosition().y, gameObjects[4]->getPosition().z));
@@ -404,14 +400,13 @@ void Game::Update(float deltaTime, float totalTime)
 		renderManager.loopSpotLights(&spotLight, &spotLight2, gameObjects[4]->getPosition().x);
 	}
 	
-
-	gameObjects[1]->Move(-5 * deltaTime, XMFLOAT3(1,0,0));
+	gameObjects[1]->Move(-5, XMFLOAT3(1,0,0));
 	if (gameObjects[1]->getPosition().x < -10)
 	{
 		gameObjects[1]->setPosition(XMFLOAT3(10, gameObjects[1]->getPosition().y, 0));
 	}
 
-	gameObjects[2]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+	gameObjects[2]->Move(-5, XMFLOAT3(1, 0, 0));
 	if (gameObjects[2]->getPosition().x < -10)
 	{
 		gameObjects[2]->setPosition(XMFLOAT3(10, gameObjects[2]->getPosition().y, 0));
@@ -437,6 +432,10 @@ void Game::Update(float deltaTime, float totalTime)
 		gameObjects[3]->getPosition().x < -10)
 	{
 		gameObjects[3]->setPosition(XMFLOAT3(10, 0, 0));
+	}
+
+	for (Entity * gameObject : gameObjects) {
+		gameObject->update(deltaTime);
 	}
 }
 

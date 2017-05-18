@@ -13,6 +13,8 @@
 class RenderManager{
 
 private:
+	ID3D11RenderTargetView* activeRTV;
+
 	std::vector<ID3D11ShaderResourceView*> textures;
 	std::vector<ID3D11ShaderResourceView*> normalMaps;
 	std::vector<Material*> materials;
@@ -27,11 +29,14 @@ private:
 	//std::vector<DirectionalLight> lights;
 
 	// Post-processing requirements
-	ID3D11RenderTargetView* ppRTV;
-	ID3D11ShaderResourceView* ppSRV;
+	ID3D11RenderTargetView* ppRTV1;
+	ID3D11RenderTargetView* ppRTV2;
+	ID3D11ShaderResourceView* ppSRV1;
+	ID3D11ShaderResourceView* ppSRV2;
 	ID3D11SamplerState* ppSampler;
 	SimpleVertexShader* ppVS;
 	SimplePixelShader* ppPS;
+	SimplePixelShader* screenPS;
 
 	// Shadow requirements
 	float lastTime;
@@ -82,4 +87,3 @@ public:
 	void rotateDirLight(int x, int y, int z, float radian, DirectionalLight* dirLight);
 	void rotateSpotLights(int x, int y, int z, float radian, SpotLight* spotLight, SpotLight* spotLight2);
 };
-

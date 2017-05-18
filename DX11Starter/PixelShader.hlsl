@@ -11,14 +11,14 @@ struct VertexToPixel
 	//  |   Name          Semantic
 	//  |    |                |
 	//  v    v                v
-	float4 position		: SV_POSITION;
-	float3 worldPos		: POSITION;
-	float3 normal		: NORMAL;
-	float3 tangent		: TANGENT;
-	float2 uv			: TEXCOORD;
-	float4 spot1ShadowPos : POSITION1;
-	float4 spot2ShadowPos : POSITION2;
-	float4 dirShadowPos	: POSITION3;
+	float4 position			: SV_POSITION;
+	float3 worldPos			: POSITION;
+	float3 normal			: NORMAL;
+	float3 tangent			: TANGENT;
+	float2 uv				: TEXCOORD;
+	float4 spot1ShadowPos	: POSITION1;
+	float4 spot2ShadowPos	: POSITION2;
+	float4 dirShadowPos		: POSITION3;
 };
 
 struct DirectionalLight

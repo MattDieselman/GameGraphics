@@ -24,14 +24,17 @@ public:
 	~Entity();
 
 	bool active;
+	bool xMovement;
+	bool yMovement;
 
 	virtual void init(ColliderType colliderType, float mass);
 	virtual void update(float dt);
 
 	DirectX::XMFLOAT4X4 getWorld();
 	DirectX::XMFLOAT3 getPosition() const;
-	DirectX::XMFLOAT3 getRotation();
+	DirectX::XMFLOAT3 getRotation() const;
 	DirectX::XMFLOAT3 getScale() const;
+	DirectX::XMFLOAT3 getVelocity() const;
 
 	void setPosition(DirectX::XMFLOAT3 pos);
 	void setScale(DirectX::XMFLOAT3 scale);

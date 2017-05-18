@@ -3,7 +3,8 @@ cbuffer Data : register(b0)
 {
 	float pixelWidth;
 	float pixelHeight;
-	int blurAmount;
+	int blurAmountX;
+	int blurAmountY;
 }
 
 // Input data from VS
@@ -23,17 +24,24 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float4 totalColor = float4(0,0,0,0);
 	uint numSamples = 0;
 
-	for (int y = -blurAmount; y <= blurAmount; y++)
+	for (int y = -blurAmountY; y <= blurAmountY; y++)
 	{
-		for (int x = -blurAmount; x <= blurAmount; x++)
-		{
-			// Get the uv for the current sample
-			float2 uv = input.uv + float2(x * pixelWidth, y * pixelHeight);
+		// Get the uv for the current sample
+		float2 uv = input.uv + float2(pixelWidth, y * pixelHeight);
 
-			// Add to the total color
-			totalColor += Pixels.Sample(Sampler, uv);
-			numSamples++;
-		}
+		// Add to the total color
+		totalColor += Pixels.Sample(Sampler, uv);
+		numSamples++;
+	}
+
+	for (int x = -blurAmountX; x <= blurAmountX; x++)
+	{
+		// Get the uv for the current sample
+		float2 uv = input.uv + float2(x * pixelWidth, pixelHeight);
+
+		// Add to the total color
+		totalColor += Pixels.Sample(Sampler, uv);
+		numSamples++;
 	}
 
 	return totalColor / numSamples;
