@@ -232,6 +232,7 @@ void Game::Init()
 
 	Emitter* emitter;
 	Emitter* emitter2;
+	//Fire & smoke
 	emitter = new Emitter(
 		1000,							// Max particles
 		100,							// Particles per second
@@ -263,8 +264,48 @@ void Game::Init()
 		renderManager.getPartPix(),
 		renderManager.getPartText(1));
 
+	//Create random spread
+
 	emitters.push_back(emitter);
 	emitters.push_back(emitter2);
+
+	for (int i = 0; i < 9; i++) {
+		//float randX = (((float)rand() / RAND_MAX) * 2 - 1);
+		//float randY = (((float)rand() / RAND_MAX) * 2 - 1);
+		Emitter * emitterCoin;
+		emitterCoin = new Emitter(15, 5, 1, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, 1), XMFLOAT4(.6, .6, .6, 0), XMFLOAT3(0 , 0, 0), gameObjects[11]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+		emitterCoin->isWorld = false;
+		emitterCoin->randomizeVelocity();
+		emitters.push_back(emitterCoin);
+	}
+	//#pragma region CoinEmitters
+	//	Emitter * emitterCoin2;
+	//	emitterCoin2 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[12]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin3;
+	//	emitterCoin3 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[13]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin4;
+	//	emitterCoin4 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[14]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin5;
+	//	emitterCoin5 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[15]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin6;
+	//	emitterCoin6 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[16]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin7;
+	//	emitterCoin7 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[17]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin8;
+	//	emitterCoin8 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[18]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+	//	Emitter * emitterCoin9;
+	//	emitterCoin9 = new Emitter(3000, 1000, .5, .05f, 1.0f, XMFLOAT4(.1f, .1f, .1f, .05f), XMFLOAT4(.6, .6, .6, .09), XMFLOAT3(randX - .05, randY, 0), gameObjects[19]->getPosition(), XMFLOAT3(0, 0, 0), device, renderManager.getPartVert(), renderManager.getPartPix(), renderManager.getPartText(2));
+
+	//#pragma endregion
+
+	//emitters.push_back(emitterCoin2);
+	//emitters.push_back(emitterCoin3);
+	//emitters.push_back(emitterCoin4);
+	//emitters.push_back(emitterCoin5);
+	//emitters.push_back(emitterCoin6);
+	//emitters.push_back(emitterCoin7);
+	//emitters.push_back(emitterCoin8);
+	//emitters.push_back(emitterCoin9);
 
 
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -404,9 +445,11 @@ void Game::Update(float deltaTime, float totalTime)
 	cam->Update();
 	inputManager.update(deltaTime, emitters);
 	
+	emitters[0]->setPosition(gameObjects[0]->getPosition());
+	emitters[1]->setPosition(gameObjects[0]->getPosition());
+
 	for (Emitter * e : emitters)
 	{
-		e->setPosition(gameObjects[0]->getPosition());
 		e->Update(deltaTime);
 	}
 
@@ -485,6 +528,8 @@ void Game::Update(float deltaTime, float totalTime)
 	for (int i = 11; i < 20; i++)
 	{
 		gameObjects[i]->Move(-5 * deltaTime, XMFLOAT3(1, 0, 0));
+		emitters[i - 9]->setPosition(gameObjects[i]->getPosition());
+
 	} 
 	// Coin Animations
 	for (int i = 11; i < 20; i++)
@@ -502,6 +547,8 @@ void Game::Update(float deltaTime, float totalTime)
 			if (CollisionCheck[gameObjects[0]->getCollider().colliderType][gameObjects[i]->getCollider().colliderType](*gameObjects[0], *gameObjects[i]))
 			{
 				coinCollected[i - 11].set();
+				emitters[i-9]->setPosition(gameObjects[i]->getPosition());
+				emitters[i-9]->shouldDraw = false;
 			}
 		}
 	}
@@ -509,21 +556,26 @@ void Game::Update(float deltaTime, float totalTime)
 	if (gameObjects[13]->getPosition().x < -7.8)
 	{
 		// Reset Position
-		gameObjects[11]->setPosition(XMFLOAT3(10, gameObjects[11]->getPosition().y, 0));
-		gameObjects[12]->setPosition(XMFLOAT3(11, gameObjects[12]->getPosition().y, 0));
-		gameObjects[13]->setPosition(XMFLOAT3(12, gameObjects[13]->getPosition().y, 0));
-		gameObjects[14]->setPosition(XMFLOAT3(10, gameObjects[14]->getPosition().y, 0));
-		gameObjects[15]->setPosition(XMFLOAT3(11, gameObjects[15]->getPosition().y, 0));
-		gameObjects[16]->setPosition(XMFLOAT3(12, gameObjects[16]->getPosition().y, 0));
-		gameObjects[17]->setPosition(XMFLOAT3(10, gameObjects[17]->getPosition().y, 0));
-		gameObjects[18]->setPosition(XMFLOAT3(11, gameObjects[18]->getPosition().y, 0));
-		gameObjects[19]->setPosition(XMFLOAT3(12, gameObjects[19]->getPosition().y, 0));
-		// Reset Collected
 		for (int i = 11; i < 20; i++)
 		{
+			gameObjects[11]->setPosition(XMFLOAT3(10, gameObjects[11]->getPosition().y, 0));
+			gameObjects[12]->setPosition(XMFLOAT3(11, gameObjects[12]->getPosition().y, 0));
+			gameObjects[13]->setPosition(XMFLOAT3(12, gameObjects[13]->getPosition().y, 0));
+			gameObjects[14]->setPosition(XMFLOAT3(10, gameObjects[14]->getPosition().y, 0));
+			gameObjects[15]->setPosition(XMFLOAT3(11, gameObjects[15]->getPosition().y, 0));
+			gameObjects[16]->setPosition(XMFLOAT3(12, gameObjects[16]->getPosition().y, 0));
+			gameObjects[17]->setPosition(XMFLOAT3(10, gameObjects[17]->getPosition().y, 0));
+			gameObjects[18]->setPosition(XMFLOAT3(11, gameObjects[18]->getPosition().y, 0));
+			gameObjects[19]->setPosition(XMFLOAT3(12, gameObjects[19]->getPosition().y, 0));
+		
+
+		// Reset Collected
+
 			if (coinCollected[i - 11].to_ulong() == 1)
 			{
 				coinCollected[i - 11].set(0, 0);
+				emitters[i - 9]->setPosition(gameObjects[i]->getPosition());
+				emitters[i - 9]->shouldDraw = true;
 			}
 		}
 	}

@@ -18,6 +18,7 @@ Emitter::~Emitter()
 Emitter::Emitter(int maxParticles_, int particlesPerSecond_, float lifetime_, float startSize_, float endSize_, DirectX::XMFLOAT4 startColor_, DirectX::XMFLOAT4 endColor_, DirectX::XMFLOAT3 startVelocity_, DirectX::XMFLOAT3 emitterPosition_, DirectX::XMFLOAT3 emitterAcceleration_, ID3D11Device * device_, SimpleVertexShader * vertShader_, SimplePixelShader * pixShader_, ID3D11ShaderResourceView * texture_)
 {
 	shouldDraw = true;
+	isWorld = true;
 	vertShader = vertShader_;
 	pixShader = pixShader_;
 	texture = texture_;
@@ -86,8 +87,19 @@ void Emitter::setPosition(DirectX::XMFLOAT3 position)
 	emitterPos = position;
 }
 
+void Emitter::randomizeVelocity()
+{
+	for(int i = 0; i < maxParticles;i++) {
+		particles[i].StartVelocity.x += (((float)rand() / RAND_MAX) * 2 - 1);
+		particles[i].StartVelocity.y += (((float)rand() / RAND_MAX) * 2 - 1);
+		particles[i].StartVelocity.z += (((float)rand() / RAND_MAX) * 2 - 1);
+	}
+}
+
+
 void Emitter::Update(float dt)
 {	
+
 	while (timeSinceEmit > secsPerParticle)
 	{
 		if(shouldDraw)SpawnPart();
@@ -123,6 +135,7 @@ void Emitter::UpdateSinglePart(float dt, int index)
 		firstAliveIndex++;
 		firstAliveIndex %= maxParticles;
 		liveParticles--;
+		//move particles off the screen so they dont create the cloud of death
 		particles[index].Position = XMFLOAT3(-100, -100, -100);
 		return;
 	}
@@ -142,9 +155,17 @@ void Emitter::UpdateSinglePart(float dt, int index)
 	float t = particles[index].Age;
 
 	//move based on last position
-	DirectX::XMStoreFloat3(
-		&particles[index].Position,
-		accel * t * t / 1.0f + startVel * t + currentPos);
+	if (isWorld) {
+		DirectX::XMStoreFloat3(
+			&particles[index].Position,
+			accel * t * t / 1.0f + startVel * t + currentPos);
+	}
+	else
+	{
+		DirectX::XMStoreFloat3(
+			&particles[index].Position,
+			accel * t * t / 1.0f + startVel * t + startPos);
+	}
 }
 
 void Emitter::SpawnPart()
@@ -165,6 +186,11 @@ void Emitter::SpawnPart()
 	particles[firstDeadIndex].StartVelocity.y += ((float)rand() / RAND_MAX) * 0.1f - 0.09f;
 	particles[firstDeadIndex].StartVelocity.z += ((float)rand() / RAND_MAX) * 0.1f - 0.09f;
 
+	if (!isWorld) {
+		particles[firstDeadIndex].StartVelocity.x += (((float)rand() / RAND_MAX) * 2 - 1);
+		particles[firstDeadIndex].StartVelocity.y += (((float)rand() / RAND_MAX) * 2 - 1);
+		particles[firstDeadIndex].StartVelocity.z += (((float)rand() / RAND_MAX) * 2 - 1);
+	}
 	firstDeadIndex++;
 	firstDeadIndex %= maxParticles;
 	liveParticles++;

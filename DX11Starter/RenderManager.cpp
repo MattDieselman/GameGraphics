@@ -566,12 +566,15 @@ void RenderManager::LoadShaders(ID3D11Device* device, ID3D11DeviceContext* conte
 
 	ID3D11ShaderResourceView* particleTexture;
 	ID3D11ShaderResourceView* particleTexture2;
+	ID3D11ShaderResourceView* particleTexture3;
 
 	CreateWICTextureFromFile(device, context, L"textures/fireParticle.jpg", 0, &particleTexture);
 	CreateWICTextureFromFile(device, context, L"textures/particle.jpg", 0, &particleTexture2);
+	CreateWICTextureFromFile(device, context, L"textures/sparkle.png", 0, &particleTexture3);
 
 	particleTextures.push_back(particleTexture);
 	particleTextures.push_back(particleTexture2);
+	particleTextures.push_back(particleTexture3);
 
 	textures.push_back(texture1);
 	textures.push_back(texture2);
