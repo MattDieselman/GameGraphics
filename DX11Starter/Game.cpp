@@ -233,9 +233,9 @@ void Game::Init()
 		5.0f,							// End size
 		XMFLOAT4(1, 0.1f, 0.1f, 0.2f),	// Start color
 		XMFLOAT4(1, 0.6f, 0.1f, 0),		// End color
-		XMFLOAT3(0, -.2, 0),				// Start velocity
+		XMFLOAT3(-.1, -.8, 0),				// Start velocity
 		gameObjects[0]->getPosition(),				// Start position
-		XMFLOAT3(0, -.1, 0),				// Start acceleration
+		XMFLOAT3(0, 3, 0),				// Start acceleration
 		device,
 		renderManager.getPartVert(),
 		renderManager.getPartPix(),
@@ -243,14 +243,14 @@ void Game::Init()
 	emitter2 = new Emitter(
 		1000,							// Max particles
 		100,							// Particles per second
-		5,								// Particle lifetime
-		0.1f,							// Start size
-		5.0f,							// End size
-		XMFLOAT4(0.1f, 0.1f, 0.1f, .10f),	// Start color
-		XMFLOAT4(.1f, .1f, .1f, 0),		// End color
-		XMFLOAT3(0, -1, 0),				// Start velocity
+		.5,								// Particle lifetime
+		.5f,							// Start size
+		4.0f,							// End size
+		XMFLOAT4(0.1f, 0.1f, 0.1f, .40f),	// Start color
+		XMFLOAT4(.1f, .1f, .1f, .60f),		// End color
+		XMFLOAT3(-.1, -.1, 0),				// Start velocity
 		gameObjects[0]->getPosition(),				// Start position
-		XMFLOAT3(0, -.1, 0),				// Start acceleration
+		XMFLOAT3(-.1, .05, 0),				// Start acceleration
 		device,
 		renderManager.getPartVert(),
 		renderManager.getPartPix(),
