@@ -228,14 +228,14 @@ void Game::Init()
 	emitter = new Emitter(
 		1000,							// Max particles
 		100,							// Particles per second
-		1,								// Particle lifetime
+		.4,								// Particle lifetime
 		0.1f,							// Start size
 		5.0f,							// End size
 		XMFLOAT4(1, 0.1f, 0.1f, 0.2f),	// Start color
 		XMFLOAT4(1, 0.6f, 0.1f, 0),		// End color
-		XMFLOAT3(0, -1, 0),				// Start velocity
+		XMFLOAT3(0, -.2, 0),				// Start velocity
 		gameObjects[0]->getPosition(),				// Start position
-		XMFLOAT3(0, -10, 0),				// Start acceleration
+		XMFLOAT3(0, -.1, 0),				// Start acceleration
 		device,
 		renderManager.getPartVert(),
 		renderManager.getPartPix(),
@@ -395,7 +395,7 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {
 	cam->Update();
-	inputManager.update(deltaTime);
+	inputManager.update(deltaTime, emitters);
 	
 	for (Emitter * e : emitters)
 	{

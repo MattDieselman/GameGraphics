@@ -57,6 +57,9 @@ private:
 	SimplePixelShader* pixShader;
 
 public:
+
+	bool shouldDraw;
+
 	Emitter();
 	~Emitter();
 
